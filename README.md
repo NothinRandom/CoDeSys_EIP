@@ -38,119 +38,123 @@ Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys structs wit
 #### Reading (kept it simple)
 **NOTE**:
 * Add "Program:{programName}." prefix to read program tags (e.g. Program:MainProgram.codesys_bool_local)
-* Possible arguments for `bRead(sTag (STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiUdtSize (UINT), uiElements (UINT))`
+* Possible arguments for `bRead(sTag (STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT))`
     * uiElements (default: `1`).  Will need to test if we can read multiple elements.
 * If the data type of the read response does not match what the requested data type is, then a read error is thrown (avoids buffer overflow)
+* For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
+    * Example pstTag:=ADR(_sMyTestString).  If value is empty, bRead/bRrite will return `FALSE`
 
 Below reads the PLC controller tag `codesys_bool` with data type of **BOOL** and writes to a CoDeSys **BOOL** called `_bReadTag_codesys_bool`
 ```
-_PLC.bRead(sTag:='codesys_bool',
+_PLC.bRead(pstTag:=ADR('codesys_bool'),
             eDataType:=CoDeSys_EIP.eCipTypes._BOOL,
             pbBuffer:=ADR(_bReadTag_codesys_bool));
 ```
 Below reads the PLC controller tag `codesys_sint` with data type of **SINT** and writes to a CoDeSys **SINT** called `_siReadTag_codesys_sint`
 ```
-_PLC.bRead(sTag:='codesys_sint',
+_PLC.bRead(pstTag:=ADR('codesys_sint'),
             eDataType:=CoDeSys_EIP.eCipTypes._SINT,
             pbBuffer:=ADR(_siReadTag_codesys_sint));
 ```
 Below reads the PLC controller tag `codesys_usint` with data type of **USINT** and writes to a CoDeSys **USINT** called `_usiReadTag_codesys_usint`
 ```
-_PLC.bRead(sTag:='codesys_usint',
+_PLC.bRead(pstTag:=ADR('codesys_usint'),
             eDataType:=CoDeSys_EIP.eCipTypes._USINT,
             pbBuffer:=ADR(_usiReadTag_codesys_usint));
 ```
 Below reads the PLC controller tag `codesys_int` with data type of **INT** and writes to a CoDeSys **INT** called `_iReadTag_codesys_int`
 ```
-_PLC.bRead(sTag:='codesys_int',
+_PLC.bRead(pstTag:=ADR('codesys_int'),
             eDataType:=CoDeSys_EIP.eCipTypes._INT,
             pbBuffer:=ADR(_iReadTag_codesys_int));
 ```
 Below reads the PLC controller tag `codesys_uint` with data type of **UINT** and writes to a CoDeSys **UINT** called `_uiReadTag_codesys_uint`
 ```
-_PLC.bRead(sTag:='codesys_uint',
+_PLC.bRead(pstTag:=ADR('codesys_uint'),
             eDataType:=CoDeSys_EIP.eCipTypes._UINT,
             pbBuffer:=ADR(_uiReadTag_codesys_uint));
 ```
 Below reads the PLC controller tag `codesys_dint` with data type of **DINT** and writes to a CoDeSys **DINT** called `_diReadTag_codesys_dint`
 ```
-_PLC.bRead(sTag:='codesys_dint',
+_PLC.bRead(pstTag:=ADR('codesys_dint'),
             eDataType:=CoDeSys_EIP.eCipTypes._DINT,
             pbBuffer:=ADR(_diReadTag_codesys_dint));
 ```
 Below reads the PLC controller tag `codesys_udint` with data type of **UDINT** and writes to a CoDeSys **UDINT** called `_udiReadTag_codesys_udint`
 ```
-_PLC.bRead(sTag:='codesys_udint',
+_PLC.bRead(pstTag:=ADR('codesys_udint'),
             eDataType:=CoDeSys_EIP.eCipTypes._UDINT,
             pbBuffer:=ADR(_udiReadTag_codesys_udint));
 ```
 Below reads the PLC controller tag `codesys_lint` with data type of **LINT** and writes to a CoDeSys **LINT** called `_liReadTag_codesys_lint`
 ```
-_PLC.bRead(sTag:='codesys_lint',
+_PLC.bRead(pstTag:=ADR('codesys_lint'),
             eDataType:=CoDeSys_EIP.eCipTypes._LINT,
             pbBuffer:=ADR(_liReadTag_codesys_lint));
 ```
 Below reads the PLC controller tag `codesys_ulint` with data type of **ULINT** and writes to a CoDeSys **ULINT** called `_uliReadTag_codesys_ulint`
 ```
-_PLC.bRead(sTag:='codesys_ulint',
+_PLC.bRead(pstTag:=ADR('codesys_ulint'),
             eDataType:=CoDeSys_EIP.eCipTypes._ULINT,
             pbBuffer:=ADR(_uliReadTag_codesys_ulint));
 ```
 Below reads the PLC controller tag `codesys_real` with data type of **REAL** and writes to a CoDeSys **REAL** called `_rReadTag_codesys_real`
 ```
-_PLC.bRead(sTag:='codesys_real',
+_PLC.bRead(pstTag:=ADR('codesys_real'),
             eDataType:=CoDeSys_EIP.eCipTypes._REAL,
             pbBuffer:=ADR(_rReadTag_codesys_real));
 ```
 Below reads the PLC controller tag `codesys_lreal` with data type of **LREAL** and writes to a CoDeSys **LREAL** called `_lrReadTag_codesys_lreal`
 ```
-_PLC.bRead(sTag:='codesys_lreal',
+_PLC.bRead(pstTag:=ADR('codesys_lreal'),
             eDataType:=CoDeSys_EIP.eCipTypes._LREAL,
             pbBuffer:=ADR(_lrReadTag_codesys_lreal));
 ```
 Below reads the PLC controller tag `codesys_string` with data type of **STRUCT** and writes to a CoDeSys **STRING** called `_sReadTag_codesys_string`  
-**Note**: If you do not specify `uiUdtSize`, then the output will only contain the string data and not the string length (DINT)
+**Note**: If you do not specify `uiSize`, then the output will only contain the string data and not the string length (DINT)
 ```
-_PLC.bRead(sTag:='codesys_string',
+_PLC.bRead(pstTag:=ADR('codesys_string'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_sReadTag_codesys_string));
 ```
 Below reads the PLC controller UDT called `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`  
 **Note**: Specify the size of the CoDeSys struct.  See `Examples` folder for more details
 ```
-_PLC.bRead(sTag:='codesys_mixed',
+_PLC.bRead(pstTag:=ADR('codesys_mixed'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stReadTag_codesys_mixed),
-            uiUdtSize:=uiUdtSize:=SIZEOF(_stReadTag_codesys_mixed));
+            uiSize:=SIZEOF(_stReadTag_codesys_mixed));
 ```
 Below reads the PLC tag `codesys_string_local` of a program called `MainProgram` with data type of **STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_string_local`  
-**Note**: Specify `uiUdtSize` since struct also has string length (DINT).  See `Examples` folder for more details
+**Note**: Specify `uiSize` since struct also has string length (DINT).  See `Examples` folder for more details
 ```
-_PLC.bRead(sTag:='Program:MainProgram.codesys_string_local',
+_PLC.bRead(pstTag:=ADR('Program:MainProgram.codesys_string_local'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stReadTag_codesys_string_local),
-            uiUdtSize:=SIZEOF(_stReadTag_codesys_string_local));
+            uiSize:=SIZEOF(_stReadTag_codesys_string_local));
 ```
 Below reads the array index 3 of a PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings`  
-**Note**: Specify `uiUdtSize` since struct also has string length (DINT).  See `Examples` folder for more details
+**Note**: Specify `uiSize` since struct also has string length (DINT).  See `Examples` folder for more details
 ```
-_PLC.bRead(sTag:='testCaseFiveStrings.strTest[3]',
+_PLC.bRead(pstTag:=ADR('testCaseFiveStrings.strTest[3]'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stReadTag_testCaseFiveStrings),
-            uiUdtSize:=SIZEOF(_stReadTag_testCaseFiveStrings));
+            uiSize:=SIZEOF(_stReadTag_testCaseFiveStrings));
 ```
 
 #### Writing (kept it simple)
-* **NOTE**:
-    * Writing all data types follows the same format as read.
-    * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
-    * Possible arguments for `bWrite(sTag (STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiUdtSize (UINT), uiElements (UINT))`
-        * uiElements (default: `1`).  Will need to test if we can write multiple elements.
-    * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the struct identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
+**NOTE**:
+* Writing all data types follows the same format as read.
+* Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
+* Possible arguments for `bWrite(sTag (STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT))`
+    * uiElements (default: `1`).  Will need to test if we can write multiple elements.
+* If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the struct identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
+* For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
+    * Example pstTag:=ADR(_sMyTestString).  If value is empty, bRead/bRrite will return `FALSE`
 
 Below writes the CoDeSys **BOOL** called `_bWriteTag_codesys_bool_local` to the PLC tag `codesys_bool_local` of a program called `MainProgram`
 ```
-_PLC.bWrite(sTag:='Program:MainProgram.codesys_bool_local',
+_PLC.bWrite(pstTag:=ADR('Program:MainProgram.codesys_bool_local'),
             eDataType:=CoDeSys_EIP.eCipTypes._BOOL,
             pbBuffer:=ADR(_bWriteTag_codesys_bool_local));
 ```
@@ -161,17 +165,17 @@ _PLC.bWrite(sTag:='Program:MainProgram.codesys_bool_local',
 
 Below writes the CoDeSys **LREAL** called `_lrWriteTag_codesys_lreal_local` to the PLC tag `codesys_lreal_local` of a program called `MainProgram`
 ```
-_PLC.bWrite(sTag:='Program:MainProgram.codesys_lreal_local',
+_PLC.bWrite(pstTag:=ADR('Program:MainProgram.codesys_lreal_local'),
             eDataType:=CoDeSys_EIP.eCipTypes._LREAL,
             pbBuffer:=ADR(_lrWriteTag_codesys_lreal_local));
 ```
 Below writes the CoDeSys **STRUCT** called `_stWriteTag_codesys_string` to the PLC controller tag `codesys_string`.  
 **NOTE:** Writing to a PLC string must follow the format of a struct made up of length (DINT) and a STRING.  Specify the length before writing!  See `Examples` folder for more details
 ```
-_PLC.bWrite(sTag:='codesys_string',
+_PLC.bWrite(pstTag:=ADR('codesys_string'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stWriteTag_codesys_string),
-            uiUdtSize:=SIZEOF(_stWriteTag_codesys_string));
+            uiSize:=SIZEOF(_stWriteTag_codesys_string));
 ```
 
 ### But does it work?
@@ -179,7 +183,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 * **TODO:**
     * Clean up PLC main code after other CIP services have been implemented
     * Implement large forward open to allow read/write of more than ~500 bytes
-    * Debating if `sTag` for read/write should be changed to `pbTag` as a `POINTER TO BYTE` instead.  End user would need to change from `sTag:='codesys_string'` to `pbTag:=ADR('codesys_string')`
+    * ~~Debating if `sTag` for read/write should be changed to `pbTag` as a `POINTER TO BYTE` instead.  End user would need to change from `sTag:='codesys_string'` to `pbTag:=ADR('codesys_string')`~~
     * Test reading/writing multiple elements (uiElements)
 
 ### Current features (might add more, so put in your request)
@@ -187,9 +191,10 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 #### List Identity
 `bGetListIdentity()` (BOOL) is automatically called after TCP connection is established to return device info. You could scan your network for other EtherNet/IP capable devices.  
 * **Examples:**
-    * Retrieve single parameter using: `_sVendorId := _PLC.sVendorId` as a STRING or `_uiVendorId := _PLC.uiVendorId` as UINT
+    * Retrieve single parameter using: `_sVendorId := _PLC.sVendorId` as STRING
+    * Retrieve single parameter using: `_uiVendorId := _PLC.uiVendorId` as UINT
     * Retrieve entire struct using: `_stDevice := _PLC.stListIdentity`
-        * requires struct variable called `_stDevice`: `CoDeSys_EIP.stListIdentity`
+        * Requires struct variable: `_stDevice`: `CoDeSys_EIP.stListIdentity`
         * **Output:**
             * encapsulationVersion: `1`
             * vendorId: `'Rockwell Automation/Allen-Bradley'`
@@ -216,6 +221,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
     * **NOTE:** Look at built-in `TimeStamp` function block
 
 ### Useful parameters (SET/GET)
+**NOTE:** There are a lot more, so dive into library to see what works best for you
 * `bAutoReconnect` (BOOL) reconnects you if the session closes after idle (no read/write request) for roughly 60 seconds
 	* Default: `FALSE`
     * Example set: `_PLC.bAutoReconnect := TRUE;`
@@ -252,4 +258,4 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 * `bBuildRoute(STRING)` (BOOL) if you have a custom route.
     * Example: argument of ENBT1 -> ENBT2 -> PLC might look like `'4,192.168.1.219'`
 
-**PS**: in memories of ztoka (April 2012 - May 2020).  This is for you bud.
+**PS**: In memories of ztoka (April 2012 - May 2020).  This is for you bud.
