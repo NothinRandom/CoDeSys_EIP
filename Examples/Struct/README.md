@@ -3,13 +3,13 @@
 Reference Rockwell UDTs (*.L5x)
 Reference CoDeSys structs (*.txt)
 
-Rockwell data is aligned on 4 bytes, so the CoDeSys structs need to declare bytes packing mode as `{attribute 'pack_mode' := '4'}`.  Else, you would need to pad the data with additional bytes.  There are some gotchas with string and bits, so take a look at the example structs.  I promise there is a pattern...well, kind of.
+Rockwell data is aligned on 4/8 bytes, so the CoDeSys structs need to declare bytes packing mode as `{attribute 'pack_mode' := '4'}`.  Else, you would need to pad the data with additional bytes.  There are some gotchas with string and bits, so take a look at the example structs.  I promise there is a pattern...well, kind of.
 
-For `STRING` I have noticed so far is if the Rockwell string has odd/even length.  For example, a CoDeSys string that can hold 23 max characters (STRING[23]) consumes 24 total bytes since there is a terminatioon character.  However, it looks like a Rockwell string SINT[24] doesn't use termination char, but SINT[23] will pad 1 byte to keep it even.  Need a Rockwell expert to chime in on this topic.
+For `STRING`, what I have noticed so far is the odd/even length of Rockwell string.  For example, a CoDeSys string that can hold 23 max characters (STRING[23]) consumes 24 total bytes since there is a terminatioon character.  However, it looks like a Rockwell string SINT[24] doesn't use termination char, but SINT[23] will pad 1 byte to keep it even.  Need a Rockwell expert to chime in on this topic.
 
-For `BIT` alignment of at least 2 bytes is required if the multiple bits can not fill up a byte. Look at `udtBit.L5X` and `stBitTest.txt`
+For `BIT` alignment of at least 2 bytes is required if the multiple bits can not fill up a byte. Look at `udtBit.L5X` and `stBit.txt`
 
-If you are unsure about how to convert Rockwell UDT to CoDeSys struct, then the best way is to view or export the format.  For example, Rockwell STRING24 UDT has 24 bytes.  However, if you create a CoDeSys string[24], then you actually use 25 total bytes, and the data types following the string will be incorrectly offset if you organize structs with mixed data types.
+If you are unsure about how to convert Rockwell UDT to CoDeSys struct, then the best way is to export the format for inspection.  For example, Rockwell STRING24 UDT has 24 bytes.  However, if you create a CoDeSys string[24], then you actually use 25 total bytes, and the data types following the string will be incorrectly offset if you organize structs with mixed data types.
 
 
 Rockwell UDT
@@ -49,7 +49,7 @@ END_STRUCT
 END_TYPE
 ```
 
-Data is incorrectly offset for `msgReady` when you pack into a mixed struct with declaration of string[24]:
+Data is incorrectly offset for `bReady` when you pack into a mixed struct with declaration of string[24]:
 ```
 {attribute 'pack_mode' := '4'}
 
