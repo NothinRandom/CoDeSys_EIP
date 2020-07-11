@@ -1,0 +1,29 @@
+{attribute 'pack_mode' := '4'}
+
+// NOTE: extremely important to have your bytes aligned correctly,
+//      so read up on pack mode e.g. "{attribute 'pack_mode' := '0'}"
+//      https://help.codesys.com/webapp/_cds_pragma_attribute_pack_mode;product=codesys;version=3.5.16.0
+
+// as you can see here, there's a gotcha
+// if you set {attribute 'pack_mode' := '0'}
+// then you would need the extra padding
+TYPE stTimer :
+STRUCT
+    // EN is 0x80 (128); TT is 0x40 (64); DN is 0x20 (32)
+    // bitwise:
+    //  EN 10000000
+    //  TT 01000000
+    //  DN 00100000
+    //PAD     : ARRAY [1..3] OF BYTE;
+    PAD1    : BIT;
+    PAD2    : BIT;
+    PAD3    : BIT;
+    PAD4    : BIT;
+    PAD5    : BIT;
+    DN      : BIT;
+    TT      : BIT;
+    EN      : BIT;
+    PRE     : UDINT;
+    ACC     : UDINT;
+END_STRUCT
+END_TYPE

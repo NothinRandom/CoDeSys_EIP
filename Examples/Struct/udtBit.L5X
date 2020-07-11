@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RSLogix5000Content SchemaRevision="1.0" SoftwareRevision="32.02" TargetName="udtBit" TargetType="DataType" ContainsContext="true" ExportDate="Tue Jul 07 15:06:11 2020" ExportOptions="References NoRawData L5KData DecoratedData Context Dependencies ForceProtectedEncoding AllProjDocTrans">
+<Controller Use="Context" Name="EIP_Test">
+<DataTypes Use="Context">
+<DataType Use="Target" Name="udtBit" Family="NoFamily" Class="User">
+<Members>
+<Member Name="ZZZZZZZZZZudtBit0" DataType="SINT" Dimension="0" Radix="Decimal" Hidden="true" ExternalAccess="Read/Write"/>
+<Member Name="bit01" DataType="BIT" Dimension="0" Radix="Decimal" Hidden="false" Target="ZZZZZZZZZZudtBit0" BitNumber="0" ExternalAccess="Read/Write"/>
+<Member Name="bit02" DataType="BIT" Dimension="0" Radix="Decimal" Hidden="false" Target="ZZZZZZZZZZudtBit0" BitNumber="1" ExternalAccess="Read/Write"/>
+<Member Name="bit03" DataType="BIT" Dimension="0" Radix="Decimal" Hidden="false" Target="ZZZZZZZZZZudtBit0" BitNumber="2" ExternalAccess="Read/Write"/>
+<Member Name="int01" DataType="INT" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write"/>
+<Member Name="ZZZZZZZZZZudtBit5" DataType="SINT" Dimension="0" Radix="Decimal" Hidden="true" ExternalAccess="Read/Write"/>
+<Member Name="bit04" DataType="BIT" Dimension="0" Radix="Decimal" Hidden="false" Target="ZZZZZZZZZZudtBit5" BitNumber="0" ExternalAccess="Read/Write"/>
+<Member Name="sint01" DataType="SINT" Dimension="0" Radix="Decimal" Hidden="false" ExternalAccess="Read/Write"/>
+</Members>
+</DataType>
+</DataTypes>
+</Controller>
+</RSLogix5000Content>
