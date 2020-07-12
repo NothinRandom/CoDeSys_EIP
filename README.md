@@ -2,7 +2,7 @@
 
 CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (IPC) to communicate with an Allen Bradley / Rockwell programmable logic controller (PLC) using tag based communication via explicit mesaging.  In CoDeSys, the current method of communicating with the PLC is through implicit messaging.  This means you need to set up a generic EtherNet/IP (EIP) module on each device and for each task (input/output), where you need to specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you will need to modify the PLC's code along with copying the address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.
 
-This library was inspired by another library implemented in Python called [PyLogix](https://github.com/dmroeder/pylogix).  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to fit into the controls realm.  It is written to be operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and wait until data has been read/written succesfully.  If you need to read multiple variables quickly, you can create a lower priority task and place the calls into a WHILE loop to force operations in one scan cycle (see `CoDeSys_EIP_RPi.project`).  At least 95% of the library leverages pointers for high efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
+This library was inspired by another library implemented in Python called [PyLogix](https://github.com/dmroeder/pylogix).  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to fit into the controls realm.  It is written to be operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and wait until data has been read/written succesfully.  If you need to read multiple variables quickly, you can create a lower priority task and place the calls into a WHILE loop to force operations in one scan cycle (see `CoDeSys_EIP_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
 
 ### Getting started
 Create an function block instance in your CoDeSys program, and specify the PLC's IP and port.  Then create some variables:
@@ -38,11 +38,11 @@ Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys structs wit
 #### Reading (kept it simple)
 **NOTE**:
 * Add "Program:{programName}." prefix to read program tags (e.g. Program:MainProgram.codesys_bool_local)
-* Possible arguments for `bRead(sTag (STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT))`
+* Possible arguments for `bRead(pstTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT))`
     * uiElements (default: `1`).  Will need to test if we can read multiple elements.
 * If the data type of the read response does not match what the requested data type is, then a read error is thrown (avoids buffer overflow)
 * For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
-    * Example pstTag:=ADR(_sMyTestString).  If value is empty, bRead/bRrite will return `FALSE`
+    * **Example:** pstTag:=ADR(_sMyTestString).  If value is empty, bRead returns `FALSE`
 
 Below reads the PLC controller tag `codesys_bool` with data type of **BOOL** and writes to a CoDeSys **BOOL** called `_bReadTag_codesys_bool`
 ```
@@ -117,7 +117,7 @@ _PLC.bRead(pstTag:=ADR('codesys_string'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_sReadTag_codesys_string));
 ```
-Below reads the PLC controller UDT called `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`  
+Below reads the PLC controller UDT `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`  
 **Note**: Specify the size of the CoDeSys struct.  See `Examples` folder for more details
 ```
 _PLC.bRead(pstTag:=ADR('codesys_mixed'),
@@ -146,11 +146,11 @@ _PLC.bRead(pstTag:=ADR('testCaseFiveStrings.strTest[3]'),
 **NOTE**:
 * Writing all data types follows the same format as read.
 * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
-* Possible arguments for `bWrite(sTag (STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT))`
+* Possible arguments for `bWrite(pstTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT))`
     * uiElements (default: `1`).  Will need to test if we can write multiple elements.
 * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the struct identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
 * For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
-    * Example pstTag:=ADR(_sMyTestString).  If value is empty, bRead/bRrite will return `FALSE`
+    * **Example:** pstTag:=ADR(_sMyTestString).  If value is empty, bWrite returns `FALSE`
 
 Below writes the CoDeSys **BOOL** called `_bWriteTag_codesys_bool_local` to the PLC tag `codesys_bool_local` of a program called `MainProgram`
 ```
@@ -178,13 +178,25 @@ _PLC.bWrite(pstTag:=ADR('codesys_string'),
             uiSize:=SIZEOF(_stWriteTag_codesys_string));
 ```
 
+#### Set/Get attributes
+**NOTE**:
+* Similar to bRead/bWrite, you pass in argument and expect data to be written into a buffer
+* You will need to create a STRUCT for each and specify what you are getting/setting
+* Currently only `bGetAttributeList` and `bSetAttributeList` are implemented. `bGetAttributeSingle`, `bSetAttributeSingle`, `bGetAttributeAll`, and `bSetAttributeAll` will be next
+* **Example:** get time from controller (look at `bGetPlcTime()` to see how it is implemented)
+    * Create a STRUCT for get attribute list: `_stGetPlcTime : CoDeSys_EIP.stAttributeList`
+    * Specify parameters:
+        * _stGetPlcTime.class := 16#6B; // 107
+        * _stGetPlcTime.instance := 16#01; // 1
+        * _stGetPlcTime.attributeCount := 16#01; // 1
+        * _stGetPlcTime.attributeType := 16#B; // 11
+        * _stGetPlcTime.totalLength := 16#0A; // 10
+    * Call function `bGetAttributeList(stAttributeList:=_stGetPlcTime, pbBuffer:=ADR(_stMyBuffer), uiSize:=SIZEOF(_stMyBuffer))`
+        * Data is ready when `bGetAttributeList` returns TRUE
+
+
 ### But does it work?
 Yes... 60% of the time, it works every time.  Testing was done using a Raspberry Pi 3, with CoDeSys 3.5.16.0 runtime installed, to communicate with a Rockwell `5069-L330ERMS2/A` safety PLC over WiFi.  Each read/write instruction averaged approximately 3.7 milliseconds in test project (see `CoDeSys_EIP_RPi.project` under `Examples` folder), but your mileage might vary.  You will need to install SysTime and OSCAT Basic (this is for time formatting).
-* **TODO:**
-    * Clean up PLC main code after other CIP services have been implemented
-    * Implement large forward open to allow read/write of more than ~500 bytes
-    * ~~Debating if `sTag` for read/write should be changed to `pbTag` as a `POINTER TO BYTE` instead.  End user would need to change from `sTag:='codesys_string'` to `pbTag:=ADR('codesys_string')`~~
-    * Test reading/writing multiple elements (uiElements)
 
 ### Current features (might add more, so put in your request)
 
