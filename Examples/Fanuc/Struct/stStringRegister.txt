@@ -1,0 +1,9 @@
+{attribute 'pack_mode' := '4'}
+
+// String struct
+TYPE stString :
+    STRUCT
+        Length  : DINT;
+        Data    : STRING;
+    END_STRUCT
+END_TYPE

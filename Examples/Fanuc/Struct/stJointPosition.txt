@@ -1,0 +1,20 @@
+{attribute 'pack_mode' := '0'}
+
+// Joint position struct
+TYPE stJointPosition :
+    STRUCT
+        UserFrame   : BYTE;
+        ToolFrame   : BYTE;
+        Reserved    : INT;
+        J1          : REAL;
+        J2          : REAL;
+        J3          : REAL;
+        J4          : REAL;
+        J5          : REAL;
+        J6          : REAL;
+        // extended axis
+        J7          : REAL;
+        J8          : REAL;
+        J9          : REAL;
+    END_STRUCT
+END_TYPE

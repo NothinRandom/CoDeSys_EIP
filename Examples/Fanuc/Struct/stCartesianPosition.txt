@@ -1,0 +1,33 @@
+{attribute 'pack_mode' := '0'}
+
+// Cartesian position struct
+TYPE CartPos :
+    STRUCT
+        UserFrame   : BYTE;
+        ToolFrame   : BYTE;
+        Reserved    : INT;
+        X           : REAL;
+        Y           : REAL;
+        Z           : REAL;
+        Wx          : REAL;
+        Py          : REAL;
+        Rz          : REAL;
+        TURN4       : SINT;
+        TURN5       : SINT;
+        TURN6       : SINT;
+        //CFG         : BYTE;
+        // configuration
+        RESERVED1   : BIT;
+        RESERVED2   : BIT;
+        RESERVED3   : BIT;
+        RESERVED4   : BIT;
+        FRONT       : BIT;
+        UP          : BIT;
+        LEFT        : BIT;
+        FLIP        : BIT;
+        // extended axis
+        EXT1        : DINT;
+        EXT2        : DINT;
+        EXT3        : DINT;
+    END_STRUCT
+END_TYPE
