@@ -13,8 +13,8 @@ VAR
     _bGoodWrite         : BOOL;    // status of write tag
 
     _stAttributeSingle  : CoDeSys_EIP.stAttributeSingle;    // reusable struct
-    _stLPOS             : stJointPosition;      // current linear position
-    _stJPOS             : stCartesianPosition;  // current joint position
+    _stLPOS             : stCartesianPosition;  // current linear position
+    _stJPOS             : stJointPosition;      // current joint position
     _stPosReg1          : stCartesianPosition;  // position register
     _stPosReg2          : stJointPosition;      // position register
 
@@ -56,12 +56,12 @@ Class Code:
 =====================
 Instance:
 =====================
-* 0x01 (1)		: single item
-* 0x(len)(grp)	: block items (e.g. 0x0501 (1281) is for writing 5 items of group 1)
+* 0x01 (1)      : single item
+* 0x(len)(grp)  : block items (e.g. 0x0501 (1281) is for writing 5 items of group 1)
 =====================
 Attribute:
 =====================
-* 0x01 (1) 		: index of single item (if block items, then this is starting index)
+* 0x01 (1)      : index of single item (if block items, then this is starting index)
 ```
 
 #### Reading Values
@@ -162,7 +162,7 @@ _bGoodRead := _Robot.bSetAttributeSingle(stAttributeSingle:=_stAttributeSingle,
 *
 
 Below writes the CoDeSys **STRUCT** called `_stStringRegister` to the robot's string register index 5
-**NOTE:** Writing to a PLC string must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Struct` folder for more details
+**NOTE:** Writing to a robot string register must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Struct` folder for more details
 ```
 _stAttributeSingle.class := 16#6D;
 _stAttributeSingle.instance := 16#01;
@@ -173,7 +173,6 @@ _bGoodRead := _Robot.bSetAttributeSingle(stAttributeSingle:=_stAttributeSingle,
                                         psId:=ADR('Write SR#5: '));
 ```
 Below writes the CoDeSys **STRUCT** called `_stPosReg2` to the robot's position register index 2
-**NOTE:** Writing to a robot string register must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Struct` folder for more details
 ```
 _stAttributeSingle.class := 16#7C;
 _stAttributeSingle.instance := 16#01;

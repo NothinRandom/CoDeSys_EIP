@@ -126,7 +126,7 @@ _PLC.bRead(psTag:=ADR('codesys_string'),
             pbBuffer:=ADR(_sReadTag_codesys_string));
 ```
 Below reads the PLC controller UDT `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`  
-**Note**: Specify the size of the CoDeSys STRUCT.  See `Examples` folder for more details
+**Note**: Specify the size of the CoDeSys STRUCT.  See `Examples\Rockwell` folder for more details
 ```
 _PLC.bRead(psTag:=ADR('codesys_mixed'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -134,7 +134,7 @@ _PLC.bRead(psTag:=ADR('codesys_mixed'),
             uiSize:=SIZEOF(_stReadTag_codesys_mixed));
 ```
 Below reads the PLC tag `codesys_string_local` of a program called `MainProgram` with data type of **STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_string_local`  
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples` folder for more details
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details
 ```
 _PLC.bRead(psTag:=ADR('Program:MainProgram.codesys_string_local'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -142,7 +142,7 @@ _PLC.bRead(psTag:=ADR('Program:MainProgram.codesys_string_local'),
             uiSize:=SIZEOF(_stReadTag_codesys_string_local));
 ```
 Below reads the array index 3 of a PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings`  
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples` folder for more details
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details
 ```
 _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -155,7 +155,7 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
 * Writing all data types follows the same format as read.
 * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
 * Possible arguments for `bWrite(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT), psId (POINTER TO STRING))`
-    * psId is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Write#1: ')`, sError will return `'Write#1: Path segment error'` to let you know that something is wrong with the request
+    * `psId` is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Write#1: ')`, sError will return `'Write#1: Path segment error'` to let you know that something is wrong with the request
     * uiElements (default: `1`).  Will need to test if we can write multiple elements.
 * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the STRUCT identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
 * `bWrite` returns TRUE on successful write
@@ -180,7 +180,7 @@ _PLC.bWrite(psTag:=ADR('Program:MainProgram.codesys_lreal_local'),
             pbBuffer:=ADR(_lrWriteTag_codesys_lreal_local));
 ```
 Below writes the CoDeSys **STRUCT** called `_stWriteTag_codesys_string` to the PLC controller tag `codesys_string`.  
-**NOTE:** Writing to a PLC string must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Examples` folder for more details
+**NOTE:** Writing to a PLC string must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Examples\Rockwell` folder for more details
 ```
 _PLC.bWrite(psTag:=ADR('codesys_string'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -292,7 +292,8 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 		* **Output:** '0xFFFFFFFFFFFFFFFF'
 
 `bSetPlcMask(ULINT)` (BOOL) *should* set the PLC Change To Detect mask
-**NOTE:** currently throwing a `Privelege Violation` error, need to investigate
+
+**NOTE:** currently throwing a `Privilege Violation` error, need to investigate
 * **Examples:**
     * Set the mask to 0xFFFF: `bSetPlcTime(65535)`
 
