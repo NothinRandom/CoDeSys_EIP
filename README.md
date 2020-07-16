@@ -28,6 +28,7 @@ VAR
     _sReadTag_codesys_string        : STRING;
     _stReadTag_codesys_mixed        : stMixDatatype; // contains all data types above in random order
     _stReadTag_testCaseFiveStrings  : stString25; // custom string size of 25 chars
+    _stReadTag_testCaseFiveStrings2 : ARRAY [1..2] OF stString25; // two stString25 elements for multi-read/write
     
     _bWriteTag_codesys_bool_local   : BOOL; // program tag
     _stWriteTag_codesys_string      : stString; // STRUCT with string length (DINT) and string (82 is termination)
@@ -45,7 +46,7 @@ Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys STRUCTs wit
 * Add "Program:{programName}." prefix to read program tags (e.g. Program:MainProgram.codesys_bool_local)
 * Possible arguments for `bRead(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT)), psId (POINTER TO STRING)`
     * psId is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Read#1: ')`, sError will return `'Read#1: Path segment error'` to let you know that something is wrong with the request
-    * uiElements (default: `1`).  Will need to test if we can read multiple elements.
+    * uiElements (default: `1`).  Until large forward open is implemented, make sure response fits into ~500 bytes.
 * If the data type of the read response does not match what the requested data type is, then a read error is thrown (avoids buffer overflow)
 * `bRead` returns TRUE on successful read
 * For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
@@ -149,6 +150,15 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
             pbBuffer:=ADR(_stReadTag_testCaseFiveStrings),
             uiSize:=SIZEOF(_stReadTag_testCaseFiveStrings));
 ```
+Below reads 2 elements (starting index of 1) from PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings2`  
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details
+```
+_PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[1]'),
+            eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
+            pbBuffer:=ADR(_stReadTag_testCaseFiveStrings2),
+            uiSize:=SIZEOF(_stReadTag_testCaseFiveStrings2),
+            uiElements:=2);
+```
 
 #### Writing Tag
 **NOTE**:
@@ -156,7 +166,7 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
 * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
 * Possible arguments for `bWrite(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT), psId (POINTER TO STRING))`
     * `psId` is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Write#1: ')`, sError will return `'Write#1: Path segment error'` to let you know that something is wrong with the request
-    * uiElements (default: `1`).  Will need to test if we can write multiple elements.
+    * uiElements (default: `1`).  Until large forward open is implemented, make sure request fits into ~500 bytes.
 * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the STRUCT identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
 * `bWrite` returns TRUE on successful write
 * For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
@@ -246,8 +256,10 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 #### List Identity
 `bGetListIdentity()` (BOOL) is automatically called after TCP connection is established to return device info. You could scan your network for other EtherNet/IP capable devices.  
 * **Examples:**
-    * Retrieve single parameter using: `_sVendorId := _PLC.sVendorId` as STRING
     * Retrieve single parameter using: `_uiVendorId := _PLC.uiVendorId` as UINT
+        * **Output:** `1`
+    * Retrieve single parameter using: `_sVendorId := _PLC.sVendorId` as STRING
+        * **Output:** `'Rockwell Automation/Allen-Bradley'`
     * Retrieve entire STRUCT using: `_stDevice := _PLC.stListIdentity`
         * Requires STRUCT variable: `_stDevice`: `CoDeSys_EIP.stListIdentity`
         * **Output:**
@@ -265,31 +277,31 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 `bGetPlcTime()` (BOOL) requests the current PLC time.  The function can handle 64b time up to nanoseconds, but the PLC's accuracy is only available at the microseconds.
 * **Example:**
 	* Retrieve time as STRING: `_sPlcTime := _PLC.sPlcTime`
-		* **Output:** 'LDT#2020-07-10-01:05:59.409036000'
+		* **Output:** `'LDT#2020-07-10-01:05:59.409036000'`
     * Retrieve time in microseconds as ULINT: `_uliPlcTime := _PLC.uliPlcTime`
-    	* **Output:** 1593815478238754
+    	* **Output:** `1593815478238754`
 
 `bSetPlcTime(ULINT)` (BOOL) sets the PLC time.
 * **Examples:**
     * Synchronize PLC's time to IPC's time: `bSetPlcTime()`
     * Set a PLC time in microseconds to `Friday, July 3, 2020 10:31:18 PM GMT` with seconds level accuracy: `bSetPlcTime(1593815478000000)`
-    * **NOTE:** Look at built-in `TimeStamp` function block
+    * **NOTE:** Look at built-in `Timestamp` function block
 
 #### Detect Code Changes
 From a security perspective, it is useful to detect changes on the Rockwell PLC.
 `bGetPlcAuditValue()` (BOOL) requests the PLC audit value.
 * **Example:**
 	* Retrieve audit value as ULINT: `_uliAuditValue := _PLC.uliAuditValue`
-		* **Output:** 12650121977826373092 (16#AF8E42EA65B3EDE4)
+		* **Output:** `12650121977826373092` (16#AF8E42EA65B3EDE4)
 	* Retrieve audit value as STRING: `_sAuditValue := _PLC.sAuditValue`
-		* **Output:** '0xAF8E42EA65B3EDE4'
+		* **Output:** `'0xAF8E42EA65B3EDE4'`
 
 `bGetPlcMask()` (BOOL) requests the PLC Change To Detect mask
 * **Example:**
 	* Retrieve mask value as ULINT: `_uliMask := _PLC.uliMask`
-		* **Output:** 18446744073709551615 (16#FFFFFFFFFFFFFFFF)
+		* **Output:** `18446744073709551615` (16#FFFFFFFFFFFFFFFF)
 	* Retrieve mask value as STRING: `_sMask := _PLC.sMask`
-		* **Output:** '0xFFFFFFFFFFFFFFFF'
+		* **Output:** `'0xFFFFFFFFFFFFFFFF'`
 
 `bSetPlcMask(ULINT)` (BOOL) *should* set the PLC Change To Detect mask
 
@@ -320,13 +332,13 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 * `uiDevicePort` (UINT) allows you to change device port from the one specified initially
 	* Default: `44818`
 * `udiTcpWriteTimeout` (UDINT) specifies the maximum time it should take for the TCP client write to finish
-	* Default: `200000 microseconds`
+	* Default: `200000` microseconds
 * `uiCipWriteTimeout` (UINT) specifies the maximum time it should take for a CIP write to finish
-	* Default: `200 milliseconds`
+	* Default: `200` milliseconds
 * `udiTcpClientTimeOut` (UDINT) specifies the TCP client timeout
-	* Default: `500000 microseconds`
+	* Default: `500000` microseconds
 * `udiTcpClientRetry` (UDINT) specifies the auto reconnect interval for `bAutoReconnect`
-	* Default: `5000 milliseconds`
+	* Default: `5000` milliseconds
 
 ### Useful functions:
 * `bCloseSession()` (BOOL) sends forward close request and then unregister session request. 
