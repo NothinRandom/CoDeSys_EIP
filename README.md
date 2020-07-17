@@ -46,7 +46,7 @@ Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys STRUCTs wit
 * Add "Program:{programName}." prefix to read program tags (e.g. Program:MainProgram.codesys_bool_local)
 * Possible arguments for `bRead(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT)), psId (POINTER TO STRING)`
     * psId is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Read#1: ')`, sError will return `'Read#1: Path segment error'` to let you know that something is wrong with the request
-    * uiElements (default: `1`).  Until large forward open is implemented, make sure response fits into ~500 bytes.
+    * uiElements (default: `1`).
 * If the data type of the read response does not match what the requested data type is, then a read error is thrown (avoids buffer overflow)
 * `bRead` returns TRUE on successful read
 * For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
@@ -166,7 +166,7 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[1]'),
 * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
 * Possible arguments for `bWrite(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT), psId (POINTER TO STRING))`
     * `psId` is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Write#1: ')`, sError will return `'Write#1: Path segment error'` to let you know that something is wrong with the request
-    * uiElements (default: `1`).  Until large forward open is implemented, make sure request fits into ~500 bytes.
+    * uiElements (default: `1`).
 * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the STRUCT identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
 * `bWrite` returns TRUE on successful write
 * For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
@@ -339,6 +339,10 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 	* Default: `500000` microseconds
 * `udiTcpClientRetry` (UDINT) specifies the auto reconnect interval for `bAutoReconnect`
 	* Default: `5000` milliseconds
+* `uiConnectionSize` (UINT) specifies the maximum connection bytes size for each read/write transaction.  Value is automatically resized to gvcParameters.uiTcpBuffer if it exceeds it.  Large forward open has value greater than 511.
+	* Default: `508`
+        * Using 508, which is divisible by 4.
+    * **NOTE:** Typical large forward open is around 4000.  Larger values will return `Resource Unavailable` error.
 
 ### Useful functions:
 * `bCloseSession()` (BOOL) sends forward close request and then unregister session request. 
