@@ -29,14 +29,13 @@ VAR
     _stReadTag_codesys_mixed        : stMixDatatype; // contains all data types above in random order
     _stReadTag_testCaseFiveStrings  : stString25; // custom string size of 25 chars
     _stReadTag_testCaseFiveStrings2 : ARRAY [1..2] OF stString25; // two stString25 elements for multi-read/write
-    
+
     _bWriteTag_codesys_bool_local   : BOOL; // program tag
     _stWriteTag_codesys_string      : stString; // STRUCT with string length (DINT) and string (82 is termination)
 END_VAR
 ```
 
-In your code, toggle `bEnable` of _PLC to `TRUE`.  There is optional `bAutoReconnect` if you want to reconnect in case session is terminated from idling.
-
+In your code, toggle `bEnable` of _PLC to `TRUE`.  There is optional `bAutoReconnect` to re-establish session if terminated from idling.
 
 #### Data alignment:
 Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys STRUCTs with `{attribute 'pack_mode' := '4'}`.  Read the [CoDeSys pack mode](https://help.codesys.com/webapp/_cds_pragma_attribute_pack_mode;product=codesys;version=3.5.16.0).
@@ -44,114 +43,81 @@ Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys STRUCTs wit
 #### Reading Tag
 **NOTE**:
 * Add "Program:{programName}." prefix to read program tags (e.g. Program:MainProgram.codesys_bool_local)
-* Possible arguments for `bRead(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT)), psId (POINTER TO STRING)`
-    * psId is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Read#1: ')`, sError will return `'Read#1: Path segment error'` to let you know that something is wrong with the request
-    * uiElements (default: `1`).
-* If the data type of the read response does not match what the requested data type is, then a read error is thrown (avoids buffer overflow)
-* `bRead` returns TRUE on successful read
-* For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
-    * **Example:** psTag:=ADR(_sMyTestString).  If string is empty, bRead returns `FALSE`
+* Possible arguments for `bRead`:
+    * `psTag` (POINTER TO STRING) [**required**]: Pointer to the string tag (e.g. psTag:=ADR('codesys_bool'). If string is empty, bRead throws error and returns `FALSE`.
+        * You can also point to a STRING instead (e.g. psTag:=ADR(_sMyTestString)).
+    * `eDataType` (ENUM) [**required**]: Expected CIP data type.  If read response does not match, a read error is thrown (avoids buffer overflow).
+    * `pbBuffer` (POINTER TO BYTE) [**required**]: Pointer to the output buffer.
+    * `uiSize` (UINT): Size of the output buffer (pbBuffer).
+    * `uiElements` (UINT): Elements to be requested; used when specifying array.
+        * Default: `1`
+    * `psId` (POINTER TO STRING): Pointer to caller id (e.g. psId:=ADR('Read#1: ').
+        * Useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path Segment Error` would typically be returned.  By declaring `psId:=ADR('Read#1: ')`, sError will return `'Read#1: Path Segment Error'` to let you know of the CIP error.
+    * `bUnconnected` (BOOL): Forces unconnected messaging (Send RR Data) if `TRUE`.
+* `bRead` returns TRUE on successful read.
 
-Below reads the PLC controller tag `codesys_bool` with data type of **BOOL** and writes to a CoDeSys **BOOL** called `_bReadTag_codesys_bool`
+Below reads the PLC controller tag `codesys_bool` with data type of **BOOL** and writes to a CoDeSys **BOOL** called `_bReadTag_codesys_bool`.
 ```
 _PLC.bRead(psTag:=ADR('codesys_bool'),
             eDataType:=CoDeSys_EIP.eCipTypes._BOOL,
             pbBuffer:=ADR(_bReadTag_codesys_bool),
             psId:=ADR('Read#1: '));
 ```
-Below reads the PLC controller tag `codesys_sint` with data type of **SINT** and writes to a CoDeSys **SINT** called `_siReadTag_codesys_sint`
-```
-_PLC.bRead(psTag:=ADR('codesys_sint'),
-            eDataType:=CoDeSys_EIP.eCipTypes._SINT,
-            pbBuffer:=ADR(_siReadTag_codesys_sint));
-```
-Below reads the PLC controller tag `codesys_usint` with data type of **USINT** and writes to a CoDeSys **USINT** called `_usiReadTag_codesys_usint`
-```
-_PLC.bRead(psTag:=ADR('codesys_usint'),
-            eDataType:=CoDeSys_EIP.eCipTypes._USINT,
-            pbBuffer:=ADR(_usiReadTag_codesys_usint));
-```
-Below reads the PLC controller tag `codesys_int` with data type of **INT** and writes to a CoDeSys **INT** called `_iReadTag_codesys_int`
-```
-_PLC.bRead(psTag:=ADR('codesys_int'),
-            eDataType:=CoDeSys_EIP.eCipTypes._INT,
-            pbBuffer:=ADR(_iReadTag_codesys_int));
-```
-Below reads the PLC controller tag `codesys_uint` with data type of **UINT** and writes to a CoDeSys **UINT** called `_uiReadTag_codesys_uint`
-```
-_PLC.bRead(psTag:=ADR('codesys_uint'),
-            eDataType:=CoDeSys_EIP.eCipTypes._UINT,
-            pbBuffer:=ADR(_uiReadTag_codesys_uint));
-```
-Below reads the PLC controller tag `codesys_dint` with data type of **DINT** and writes to a CoDeSys **DINT** called `_diReadTag_codesys_dint`
+
+*
+*
+*
+
+Below reads the PLC controller tag `codesys_dint` with data type of **DINT** and writes to a CoDeSys **DINT** called `_diReadTag_codesys_dint`.
 ```
 _PLC.bRead(psTag:=ADR('codesys_dint'),
             eDataType:=CoDeSys_EIP.eCipTypes._DINT,
             pbBuffer:=ADR(_diReadTag_codesys_dint));
 ```
-Below reads the PLC controller tag `codesys_udint` with data type of **UDINT** and writes to a CoDeSys **UDINT** called `_udiReadTag_codesys_udint`
-```
-_PLC.bRead(psTag:=ADR('codesys_udint'),
-            eDataType:=CoDeSys_EIP.eCipTypes._UDINT,
-            pbBuffer:=ADR(_udiReadTag_codesys_udint));
-```
-Below reads the PLC controller tag `codesys_lint` with data type of **LINT** and writes to a CoDeSys **LINT** called `_liReadTag_codesys_lint`
-```
-_PLC.bRead(psTag:=ADR('codesys_lint'),
-            eDataType:=CoDeSys_EIP.eCipTypes._LINT,
-            pbBuffer:=ADR(_liReadTag_codesys_lint));
-```
-Below reads the PLC controller tag `codesys_ulint` with data type of **ULINT** and writes to a CoDeSys **ULINT** called `_uliReadTag_codesys_ulint`
-```
-_PLC.bRead(psTag:=ADR('codesys_ulint'),
-            eDataType:=CoDeSys_EIP.eCipTypes._ULINT,
-            pbBuffer:=ADR(_uliReadTag_codesys_ulint));
-```
-Below reads the PLC controller tag `codesys_real` with data type of **REAL** and writes to a CoDeSys **REAL** called `_rReadTag_codesys_real`
-```
-_PLC.bRead(psTag:=ADR('codesys_real'),
-            eDataType:=CoDeSys_EIP.eCipTypes._REAL,
-            pbBuffer:=ADR(_rReadTag_codesys_real));
-```
-Below reads the PLC controller tag `codesys_lreal` with data type of **LREAL** and writes to a CoDeSys **LREAL** called `_lrReadTag_codesys_lreal`
+
+*
+*
+*
+
+Below reads the PLC controller tag `codesys_lreal` with data type of **LREAL** and writes to a CoDeSys **LREAL** called `_lrReadTag_codesys_lreal`.
 ```
 _PLC.bRead(psTag:=ADR('codesys_lreal'),
             eDataType:=CoDeSys_EIP.eCipTypes._LREAL,
             pbBuffer:=ADR(_lrReadTag_codesys_lreal));
 ```
-Below reads the PLC controller tag `codesys_string` with data type of **STRUCT** and writes to a CoDeSys **STRING** called `_sReadTag_codesys_string`  
-**Note**: If you do not specify `uiSize`, then the output will only contain the string data and not the string length (DINT)
+Below reads the PLC controller tag `codesys_string` with data type of **STRUCT** and writes to a CoDeSys **STRING** called `_sReadTag_codesys_string`.
+**Note**: If you do not specify `uiSize`, then the output will only contain the string data and not the string length (DINT).
 ```
 _PLC.bRead(psTag:=ADR('codesys_string'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_sReadTag_codesys_string));
 ```
-Below reads the PLC controller UDT `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`  
-**Note**: Specify the size of the CoDeSys STRUCT.  See `Examples\Rockwell` folder for more details
+Below reads the PLC controller UDT `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`.
+**Note**: Specify the size of the CoDeSys STRUCT.  See `Examples\Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('codesys_mixed'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stReadTag_codesys_mixed),
             uiSize:=SIZEOF(_stReadTag_codesys_mixed));
 ```
-Below reads the PLC tag `codesys_string_local` of a program called `MainProgram` with data type of **STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_string_local`  
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details
+Below reads the PLC tag `codesys_string_local` of a program called `MainProgram` with data type of **STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_string_local`.
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('Program:MainProgram.codesys_string_local'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stReadTag_codesys_string_local),
             uiSize:=SIZEOF(_stReadTag_codesys_string_local));
 ```
-Below reads the array index 3 of a PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings`  
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details
+Below reads the array index 3 of a PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings`.
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
             pbBuffer:=ADR(_stReadTag_testCaseFiveStrings),
             uiSize:=SIZEOF(_stReadTag_testCaseFiveStrings));
 ```
-Below reads 2 elements (starting index of 1) from PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings2`  
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details
+Below reads 2 elements (starting index of 1) from PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings2`.
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[1]'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -162,15 +128,20 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[1]'),
 
 #### Writing Tag
 **NOTE**:
-* Writing all data types follows the same format as read.
 * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
-* Possible arguments for `bWrite(psTag (POINTER TO STRING), eDataType (ENUM), pbBuffer (POINTER TO BYTE), uiSize (UINT), uiElements (UINT), psId (POINTER TO STRING))`
-    * `psId` is optional, but it is useful for troubleshooting. If you incorrectly declare your tag `codesys_boo` instead of `codesys_bool`, a `Path segment error` would typically be returned.  By declaring `psId:=ADR('Write#1: ')`, sError will return `'Write#1: Path segment error'` to let you know that something is wrong with the request
-    * uiElements (default: `1`).
 * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the STRUCT identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
+* Possible arguments for `bWrite`:
+    * `psTag` (POINTER TO STRING) [**required**]: Pointer to the string tag (e.g. psTag:=ADR('codesys_bool'). If string is empty, bWrite throws error and returns `FALSE`.
+        * You can also point to a STRING instead (e.g. psTag:=ADR(_sMyTestString)).
+    * `eDataType` (ENUM) [**required**]: Defined CIP data type.  If write response does not match, a write error is thrown.
+    * `pbBuffer` (POINTER TO BYTE) [**required**]: Pointer to the input buffer.
+    * `uiSize` (UINT): Size of the input buffer (pbBuffer).
+    * `uiElements` (UINT): Elements to be requested; used when specifying array.
+        * Default: `1`
+    * `psId` (POINTER TO STRING): Pointer to caller id (e.g. psId:=ADR('Write#1: ').
+        * Useful for troubleshooting; output to _PLC.sError.
+    * `bUnconnected` (BOOL): Forces unconnected messaging (Send RR Data) if `TRUE`.
 * `bWrite` returns TRUE on successful write
-* For those not familiar with ADR instruction, it retrieves the pointer location for you.  These example tags are hardcoded, but you can freely point to a STRING instead
-    * **Example:** psTag:=ADR(_sMyTestString).  If string is empty, bWrite returns `FALSE`
 
 Below writes the CoDeSys **BOOL** called `_bWriteTag_codesys_bool_local` to the PLC tag `codesys_bool_local` of a program called `MainProgram`
 ```
@@ -200,18 +171,22 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
 
 #### Set/Get Attributes
 **NOTE**:
-* Similar to bRead/bWrite, you pass in argument and expect data to be written into a buffer
-* You will need to create a STRUCT for each and specify what you are getting/setting
+* You will need to create a STRUCT and specify what you are getting/setting
     * You could share the same STRUCT if space is a concern (i.e. use `_stAttributeList : CoDeSys_EIP.stAttributeList` for both set/get)
 * Currently only `bGetAttributeSingle`, `bSetAttributeSingle`, `bGetAttributeList` and `bSetAttributeList` are implemented.  `bGetAttributeAll` and `bSetAttributeAll` will be next
-* Possible arguments are `bFunctionType(stSTRUCT (STRUCT), pwAttributes (POINTER TO WORD), pbBuffer (POINTER TO BYTE), uiSize (UINT), pstId (POINTER TO STRING))`
-    * `pwAttributes` is only available for `bGetAttributeList`
-    * `pstId` is optional, but it is useful when troubleshooting and reading the _PLC.sError.  Available v1.0.1.0 and above
-* Function will return TRUE on successful read/write
+* Possible arguments `bGetAttributeSingle`/`bSetAttributeSingle`/`bGetAttributeList`/`bSetAttributeList`:
+    * `stSTRUCT` (STRUCT) [**required**]:  Struct element.
+    * `pwAttributes` (POINTER TO WORD): List of attributes.  Only available for `bGetAttributeList`.
+    * `pbBuffer` (POINTER TO BYTE) [**required**]: Pointer to input/output buffer.
+    * `uiSize` (UINT) [**required**]: Size of input/output buffer (pbBuffer).
+    * `pstId` (POINTER TO STRING)): Pointer to caller id (e.g. psId:=ADR('GetPlcTime: ')).
+        * Useful for troubleshooting; output to _PLC.sError.
+    * `bUnconnected` (BOOL): Forces unconnected messaging (Send RR Data) if `TRUE`.
+* Function returns TRUE on successful read/write
 * See `Examples\Rockwell\Set-Get_Attribute_RPi.project` for more details
 * **Examples:**
     * Get PLC audit value (checksum)
-        * Create a STRUCT for get attribute single: `_stAttributeSingle	: CoDeSys_EIP.stAttributeSingle;`
+        * Create a STRUCT for get attribute single: `_stAttributeSingle    : CoDeSys_EIP.stAttributeSingle;`
         * Create a LWORD/ULINT for the result: `_lwAuditValue : LWORD;`
         * Specify parameters:
             * _stAttributeSingle.class := 16#8E; // 142
@@ -220,7 +195,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
         * Call function `bGetAttributeSingle(stAttributeSingle:=_stAttributeSingle, pbBuffer:=ADR(_lwAuditValue), uiSize:=SIZEOF(_lwAuditValue), pstId:=ADR('AuditValue: '))`
             * If there is an error, message will have header of `AuditValue`
     * Set PLC Change To Detect Mask
-        * Create a STRUCT for get attribute single: `_stAttributeSingle	: CoDeSys_EIP.stAttributeSingle;`
+        * Create a STRUCT for get attribute single: `_stAttributeSingle    : CoDeSys_EIP.stAttributeSingle;`
         * Create a LWORD/ULINT for the value: `_lwMask : LWORD;`
         * Specify parameters:
             * _stAttributeSingle.class := 16#8E; // 142
@@ -251,7 +226,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
 ### But does it work?
 Yes... 60% of the time, it works every time.  Testing was done using a Raspberry Pi 3, with CoDeSys 3.5.16.0 runtime installed, to communicate with a Rockwell `5069-L330ERMS2/A` safety PLC over WiFi.  Each read/write instruction averaged approximately 3.7 milliseconds in test project (see `Examples\Rockwell\Read-Write_Tags_RPi.project`), but your mileage might vary.  You will need to install SysTime and OSCAT Basic (this is for time formatting).
 
-### Current features (might add more, so put in your request)
+### Current features
 
 #### List Identity
 `bGetListIdentity()` (BOOL) is automatically called after TCP connection is established to return device info. You could scan your network for other EtherNet/IP capable devices.  
@@ -276,79 +251,77 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 #### Get/Set PLC time
 `bGetPlcTime()` (BOOL) requests the current PLC time.  The function can handle 64b time up to nanoseconds, but the PLC's accuracy is only available at the microseconds.
 * **Example:**
-	* Retrieve time as STRING: `_sPlcTime := _PLC.sPlcTime`
-		* **Output:** `'LDT#2020-07-10-01:05:59.409036000'`
-    * Retrieve time in microseconds as ULINT: `_uliPlcTime := _PLC.uliPlcTime`
-    	* **Output:** `1593815478238754`
+    * Retrieve time as STRING: `_sPlcTime := _PLC.sPlcTime`.
+        * **Output:** `'LDT#2020-07-10-01:05:59.409036000'`
+    * Retrieve time in microseconds as ULINT: `_uliPlcTime := _PLC.uliPlcTime`.
+        * **Output:** `1593815478238754`
 
 `bSetPlcTime(ULINT)` (BOOL) sets the PLC time.
 * **Examples:**
-    * Synchronize PLC's time to IPC's time: `bSetPlcTime()`
-    * Set a PLC time in microseconds to `Friday, July 3, 2020 10:31:18 PM GMT` with seconds level accuracy: `bSetPlcTime(1593815478000000)`
-    * **NOTE:** Look at built-in `Timestamp` function block
+    * Synchronize PLC's time to IPC's time: `bSetPlcTime()`.
+    * Set a PLC time in microseconds to `Friday, July 3, 2020 10:31:18 PM GMT` with seconds level accuracy: `bSetPlcTime(1593815478000000)`.
+    * **NOTE:** Look at built-in `Timestamp` function block.
 
 #### Detect Code Changes
 From a security perspective, it is useful to detect changes on the Rockwell PLC.
 `bGetPlcAuditValue()` (BOOL) requests the PLC audit value.
 * **Example:**
-	* Retrieve audit value as ULINT: `_uliAuditValue := _PLC.uliAuditValue`
-		* **Output:** `12650121977826373092` (16#AF8E42EA65B3EDE4)
-	* Retrieve audit value as STRING: `_sAuditValue := _PLC.sAuditValue`
-		* **Output:** `'0xAF8E42EA65B3EDE4'`
+    * Retrieve audit value as ULINT: `_uliAuditValue := _PLC.uliAuditValue`.
+        * **Output:** `12650121977826373092` (16#AF8E42EA65B3EDE4)
+    * Retrieve audit value as STRING: `_sAuditValue := _PLC.sAuditValue`.
+        * **Output:** `'0xAF8E42EA65B3EDE4'`
 
-`bGetPlcMask()` (BOOL) requests the PLC Change To Detect mask
+`bGetPlcMask()` (BOOL) requests the PLC Change To Detect mask.
 * **Example:**
-	* Retrieve mask value as ULINT: `_uliMask := _PLC.uliMask`
-		* **Output:** `18446744073709551615` (16#FFFFFFFFFFFFFFFF)
-	* Retrieve mask value as STRING: `_sMask := _PLC.sMask`
-		* **Output:** `'0xFFFFFFFFFFFFFFFF'`
+    * Retrieve mask value as ULINT: `_uliMask := _PLC.uliMask`.
+        * **Output:** `18446744073709551615` (16#FFFFFFFFFFFFFFFF)
+    * Retrieve mask value as STRING: `_sMask := _PLC.sMask`.
+        * **Output:** `'0xFFFFFFFFFFFFFFFF'`
 
-`bSetPlcMask(ULINT)` (BOOL) *should* set the PLC Change To Detect mask
+`bSetPlcMask(ULINT)` (BOOL) *should* set the PLC Change To Detect mask.
 
-**NOTE:** currently throwing a `Privilege Violation` error, need to investigate
+**NOTE:** currently throwing a `Privilege Violation` error, need to investigate.
 * **Examples:**
     * Set the mask to 0xFFFF: `bSetPlcTime(65535)`
 
 ### Useful parameters (SET/GET)
 **NOTE:** There are a lot more, so dive into library to see what works best for you
-* `bAutoReconnect` (BOOL) reconnects you if the session closes after idle (no read/write request) for roughly 60 seconds
-	* Default: `FALSE`
+* `bAutoReconnect` (BOOL) reconnects you if the session closes after idle (no read/write request) for roughly 60 seconds.
+    * Default: `FALSE`
     * Example set: `_PLC.bAutoReconnect := TRUE;`
     * Example get: `_bReconnect := _PLC.bAutoReconnect;`
-* `bHexPrefix` (BOOL) attaches the '0x' prefix to the strings from list identity STRUCT
-	* Default: `TRUE`
-* `bOverrideCheck` (BOOL) disables strict device type checking
-	* Default: `FALSE`
-    * Example: if the device is a barcode scanner that does not handle CIP, then default is not to continue with Register Session and Forward Open request and stop after list identity service.
-    * Enable this if your device is not a Rockwell PLC but can communicate using explicit messaging (e.g. Fanuc robot).
-* `bMicro800` (BOOL) specifies the device as a Micro800
-	* Default: `FALSE`
-    * Not tested.  Need someone with an actual Micro800 PLC
-* `bProcessorSlot` (BYTE) specifies the processor slot
-	* Default: `0`
-* `sDeviceIp` (STRING) allows you to change device IP from the one specified initially
-	* Default: `11.200.0.10`
-    * Might allow you to use one function block instance to connect to multiple PLCs if speed is not a requirement but space is.
-* `uiDevicePort` (UINT) allows you to change device port from the one specified initially
-	* Default: `44818`
-* `udiTcpWriteTimeout` (UDINT) specifies the maximum time it should take for the TCP client write to finish
-	* Default: `200000` microseconds
-* `uiCipWriteTimeout` (UINT) specifies the maximum time it should take for a CIP write to finish
-	* Default: `200` milliseconds
-* `udiTcpClientTimeOut` (UDINT) specifies the TCP client timeout
-	* Default: `500000` microseconds
-* `udiTcpClientRetry` (UDINT) specifies the auto reconnect interval for `bAutoReconnect`
-	* Default: `5000` milliseconds
-* `uiConnectionSize` (UINT) specifies the maximum connection bytes size for each read/write transaction.  Value is automatically resized to gvcParameters.uiTcpBuffer if it exceeds it.  Large forward open has value greater than 511.
-	* Default: `508`
+* `bHexPrefix` (BOOL) attaches the '0x' prefix to the strings from list identity STRUCT.
+    * Default: `TRUE`
+* `bUnconnectedMessaging` (BOOL) skips forward open and default to use unconnected messaging (Send RR Data).
+    * Default: `FALSE`
+* `bMicro800` (BOOL) specifies the device as a Micro800.
+    * Default: `FALSE`
+    * Not tested.  Need someone with an actual Micro800 PLC.
+* `bProcessorSlot` (BYTE) specifies the processor slot.
+    * Default: `0`
+* `sDeviceIp` (STRING) allows you to change device IP from the one specified initially.
+    * Default: `11.200.0.10`
+    * Toggle bEnable to 
+* `uiDevicePort` (UINT) allows you to change device port from the one specified initially.
+    * Default: `44818`
+* `udiTcpWriteTimeout` (UDINT) specifies the maximum time it should take for the TCP client write to finish.
+    * Default: `200000` microseconds
+* `uiCipRequestTimeout` (UINT) specifies the maximum time it should take for a CIP request to finish.
+    * Default: `200` milliseconds
+* `udiTcpClientTimeOut` (UDINT) specifies the TCP client timeout.
+    * Default: `500000` microseconds
+* `udiTcpClientRetry` (UDINT) specifies the auto reconnect interval for `bAutoReconnect`.
+    * Default: `5000` milliseconds
+* `uiConnectionSize` (UINT) specifies the maximum connection bytes size for each read/write transaction.  Value is automatically resized to gvcParameters.uiTcpBuffer if it exceeds it.
+    * Default: `508`
         * Using 508, which is divisible by 4.
-    * **NOTE:** Typical large forward open is around 4000.  Larger values will return `Resource Unavailable` error.
+    * **NOTE:** Large forward open has value greater than 511; typically around 4000.  Larger values will return `Resource Unavailable` error.
 
 ### Useful functions:
 * `bCloseSession()` (BOOL) sends forward close request and then unregister session request. 
-    * **NOTE:** If `bAutoReconnect` is set to TRUE, session will be re-established within the specified `udiTcpClientRetry` period
-* `bResetFault()` (BOOL) call this to ACK read/write fault flags
+    * **NOTE:** If `bAutoReconnect` is set to TRUE, session will be re-established within the specified `udiTcpClientRetry` period.
+* `bResetFault()` (BOOL) call this to ACK read/write fault flags.
 * `bBuildRoute(STRING)` (BOOL) if you have a custom route.
-    * Example: argument of ENBT1 -> ENBT2 -> PLC might look like `'4,192.168.1.219'`
+    * Example: argument of ENBT1 -> ENBT2 -> PLC might look like `'4,192.168.1.219'`.
 
 **PS**: In memories of ztoka (April 2012 - May 2020).  This is for you bud.

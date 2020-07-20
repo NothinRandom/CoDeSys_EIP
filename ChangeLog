@@ -1,0 +1,45 @@
+v1.0.3.0:
+* implemented unconnected messaging (Send RR Data) for all read/write and set/get
+* optimized forward open/close to remove `_uiCalcConnPathSize()`
+* renamed `_bCipWriteSuccess` to `_bCipRequestSuccess`, removed `bOverrideCheck`, and added `bUnconnectedMessaging`
+* grouped send rr/unit data into `SendData` folder
+* updated Fanuc example
+* Fixes #7
+
+v1.0.2.0:
+* implemented large forward open
+* updated enumerations and global variable lists
+* Fixes #4
+
+v1.0.1.1:
+* added pointer checks to bRead/bWrite, and the set/get attributes to make sure pointer is valid
+* added eCipStatusGeneral, gvlDeviceStates, _sGetDeviceState, sDeviceState
+* updated example projects to use latest version of library
+* updated enumerations and used them in code
+* Fixes #3, #5
+
+v1.0.1.0:
+* PLC is renamed to Device to open up project scope
+* restructured set/get attributes all to be more flexible
+* added `psId` to to bRead/bWrite, and the set/get attributes
+* added enumerations to start cleaning up main
+* added error checks into methods
+* added PlcAudit features and grouped methods into folders
+* added Fanuc example (work in progress)
+* Fixes #2
+
+v1.0.0.2:
+* first implementation of set/get attributes list
+* started on set/get attribute single
+* minor optimization in pointers
+* updated enumerations and used them in code
+* opened up issues for enhancements
+
+v1.0.0.1:
+* changed bRead/bWrite to use pointer for tag and renamed its `uiUdtSize` to `uiSize`
+* added gvlCipGeneralStatus, eCipConnManager, eCipServices, eEipServices to start cleaning up main
+* renamed `dataTypeExtended` to `structIdSize`
+* Fixes #1
+
+v1.0.0.0:
+* first release
