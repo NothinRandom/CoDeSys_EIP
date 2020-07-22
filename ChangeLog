@@ -1,3 +1,7 @@
+v1.0.3.1:
+* removed testing artifacts: `_bBuildConnectionPath_FANUC()`
+* added `stRoute` just in case end user need to specify non-standard custom route
+
 v1.0.3.0:
 * implemented unconnected messaging (Send RR Data) for all read/write and set/get
 * optimized forward open/close to remove `_uiCalcConnPathSize()`

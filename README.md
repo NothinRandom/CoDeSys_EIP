@@ -1,7 +1,7 @@
 # CoDeSys_EIP
 **What?**
 
-CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (IPC) to communicate with various EtherNet/IP capable devices such as Allen Bradley / Rockwell programmable logic controller (PLC) through tag based communication or Fanuc robot with EIP set/get attributes; both via explicit mesaging.
+CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (IPC) to communicate with various EtherNet/IP capable devices such as Allen Bradley / Rockwell programmable logic controller (PLC) through tag based communication or Fanuc robot with EIP set/get attributes; both via explicit messaging.
 
 **Why?**
 
@@ -231,9 +231,9 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 #### List Identity
 `bGetListIdentity()` (BOOL) is automatically called after TCP connection is established to return device info. You could scan your network for other EtherNet/IP capable devices.  
 * **Examples:**
-    * Retrieve single parameter using: `_uiVendorId := _PLC.uiVendorId` as UINT
+    * Retrieve single parameter as UINT using: `_uiVendorId := _PLC.uiVendorId`
         * **Output:** `1`
-    * Retrieve single parameter using: `_sVendorId := _PLC.sVendorId` as STRING
+    * Retrieve single parameter as STRING using: `_sVendorId := _PLC.sVendorId`
         * **Output:** `'Rockwell Automation/Allen-Bradley'`
     * Retrieve entire STRUCT using: `_stDevice := _PLC.stListIdentity`
         * Requires STRUCT variable: `_stDevice`: `CoDeSys_EIP.stListIdentity`
@@ -282,7 +282,7 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 
 **NOTE:** currently throwing a `Privilege Violation` error, need to investigate.
 * **Examples:**
-    * Set the mask to 0xFFFF: `bSetPlcTime(65535)`
+    * Set the mask to 0xFFFF: `bSetPlcMask(65535)`
 
 ### Useful parameters (SET/GET)
 **NOTE:** There are a lot more, so dive into library to see what works best for you
@@ -316,6 +316,8 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
     * Default: `508`
         * Using 508, which is divisible by 4.
     * **NOTE:** Large forward open has value greater than 511; typically around 4000.  Larger values will return `Resource Unavailable` error.
+* `stRoute` (STRUCT) specifies a non-standard route that `bBuildRoute()` is not able to generate.
+    * **NOTE:** Max route length is 96 bytes, and make sure to specify length so forward open knows how to properly build the route.
 
 ### Useful functions:
 * `bCloseSession()` (BOOL) sends forward close request and then unregister session request. 
