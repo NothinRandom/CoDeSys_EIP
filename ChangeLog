@@ -1,3 +1,7 @@
+v1.0.4.1:
+* reorganized switch cases in main to prioritize events
+* updated bGenericDevice to reflect changes
+
 v1.0.4.0:
 * implemented EIP generic service and get/set attribute all
 * optimized service templates resulting in minor impact to existing end user implementation

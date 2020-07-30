@@ -35,7 +35,6 @@ Fanuc robot follows similar layout like Rockwell with 4 bytes alignment when we 
 #### Available services
 Below is a table that describes possible operations
 
-**NOTE:** Only get/set attribute single is currently available.  Check back later for other services
 ```
 =====================
 Service Code:
@@ -49,8 +48,6 @@ Service Code:
 =====================
 Class Code:
 =====================
-* 0x04 (4)      : digital inputs/outputs
-
 * 0x6B (107)    : numeric register (integer)
 * 0x6C (108)    : numeric register (real)
 * 0x6D (109)    : string register
