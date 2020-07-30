@@ -1,3 +1,10 @@
+v1.0.4.0:
+* implemented EIP generic service and get/set attribute all
+* optimized service templates resulting in minor impact to existing end user implementation
+    * combined templates stAttributeAll/stAttributeSingle/stAttributeList into stCipService
+* updated example projects
+* fixes #8
+
 v1.0.3.1:
 * removed testing artifacts: `_bBuildConnectionPath_FANUC()`
 * added `stRoute` just in case end user need to specify non-standard custom route
