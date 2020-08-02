@@ -1,3 +1,9 @@
+v1.0.4.3:
+* changes to list identity
+    * removed and replaced stListIdentityReq with stEipEncapsulationHeader for request
+    * exposed device socket data to end user, useful for obtaining device's true IP address if behind a network address translator
+* updated various aux functions
+
 v1.0.4.2:
 * fixed bGetPlcTime bug from v1.0.4.0
 * standardized error reporting across all methods

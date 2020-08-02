@@ -242,6 +242,10 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
         * Requires STRUCT variable: `_stDevice`: `CoDeSys_EIP.stListIdentity`
         * **Output:**
             * encapsulationVersion: `1`
+            * socketFamily: `2`
+            * socketPort: `44818`
+            * socketAddress: `192.168.1.219`
+            * socketZero: `0`
             * vendorId: `'Rockwell Automation/Allen-Bradley'`
             * deviceType: `'Programmable Logic Controller'`
             * productCode: `223`
