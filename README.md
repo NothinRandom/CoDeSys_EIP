@@ -1,11 +1,11 @@
 # CoDeSys_EIP
 **What?**
 
-CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (IPC) to communicate with various EtherNet/IP capable devices such as Allen Bradley / Rockwell programmable logic controller (PLC) through tag based communication or Fanuc robot with EIP set/get attributes; both via explicit messaging.
+CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (IPC) to communicate with various EtherNet/IP (EIP) capable devices such as Allen Bradley / Rockwell programmable logic controller (PLC) through tag based communication or Fanuc robot with EIP set/get attributes; both via explicit messaging.
 
 **Why?**
 
-In CoDeSys, the current method of communicating with the PLC is through implicit messaging.  This means you need to set up a generic EtherNet/IP (EIP) module on each end and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you will need to modify the PLC's code along with copying the address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Similar for the Fanuc robot, there is no easy way to retrieve data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased; even then you are still bound to Rockwell.  This library allows your CoDeSys IPC to do (see `Examples\Fanuc`).
+In CoDeSys, the current method of communicating with the PLC is through implicit messaging.  This means you need to set up a generic EIP module on each end and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you will need to modify the PLC's code along with copying the address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Similar for the Fanuc robot, there is no easy way to retrieve data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased; even then you are still bound to Rockwell.  This library allows your CoDeSys IPC to do (see `Examples\Fanuc`).
 
 This library was first inspired by another library implemented in Python called [PyLogix](https://github.com/dmroeder/pylogix) and has been improved to handle STRUCTs and generic EIP services.  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to fit into the controls realm.  It is written to operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and be notified when data has been read/written succesfully.  If you need to read multiple variables quickly, you can create a lower priority task and place the calls into a WHILE loop to force operations in one scan cycle (see `Examples\Rockwell\Read-Write_Tags_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
 
@@ -172,7 +172,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
 #### Set/Get Attributes
 **NOTE**:
 * You will need to create a STRUCT and specify what you are getting/setting
-    * You could share the same STRUCT if space is a concern (i.e. use `_stAttributeList : CoDeSys_EIP.stAttributeList` for both set/get)
+    * You could share the same STRUCT if space is a concern (i.e. use `_stCipService : CoDeSys_EIP.stCipService` for both set/get)
 * Possible arguments for `bGetAttributeAll`, `bSetAttributeAll`, `bGetAttributeSingle`, `bSetAttributeSingle`, `bGetAttributeList`, `bSetAttributeList`:
     * `stSTRUCT` (STRUCT) [**required**]:  Struct element.
     * `pbBuffer` (POINTER TO BYTE) [**required**]: Pointer to either input/output buffer based on type set/get.
@@ -180,7 +180,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
     * `psId` (POINTER TO STRING): Pointer to caller id [e.g. psId:=ADR('GetPlcTime: ')].
         * Useful for troubleshooting; output to _PLC.sError.
     * `bUnconnected` (BOOL): Forces unconnected messaging (Send RR Data) if `TRUE`.
-* Possible arguments for `bGenericService`: **typically populate either pbInBuffer/uiInsize or pbOutBuffer/uiOutSize**
+* Possible arguments for `bGenericService`: **typically populate either pbInBuffer/uiInSize or pbOutBuffer/uiOutSize**
     * `stSTRUCT` (STRUCT) [**required**]:  Struct element.
     * `pbInBuffer` (POINTER TO BYTE): Pointer to input buffer.
     * `uiInSize` (UINT): Size of input buffer.
@@ -244,7 +244,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
             * encapsulationVersion: `1`
             * socketFamily: `2`
             * socketPort: `44818`
-            * socketAddress: `192.168.1.219`
+            * socketAddress: `'192.168.1.219'`
             * socketZero: `0`
             * vendorId: `'Rockwell Automation/Allen-Bradley'`
             * deviceType: `'Programmable Logic Controller'`
