@@ -1,3 +1,7 @@
+v1.0.4.4:
+* increased stCipServiceData.attributeData from 256 to 512.
+* updated documentation
+
 v1.0.4.3:
 * changes to list identity
     * removed and replaced stListIdentityReq with stEipEncapsulationHeader for request
