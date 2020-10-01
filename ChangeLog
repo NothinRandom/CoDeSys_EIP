@@ -1,3 +1,6 @@
+v1.0.4.5:
+* moved init variables from FB_init into gvcParameters so end users can adjust default values directly from Library Manager
+
 v1.0.4.4:
 * increased stCipServiceData.attributeData from 256 to 512.
 * updated documentation
