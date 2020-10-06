@@ -1,3 +1,9 @@
+v1.0.4.6:
+* in gvcParameters: 
+    * created parameter uiAttributeDataSize for stCipServiceData.attributeData
+    * created parameter uiRouteSize for stRoute.route
+    * changed tTcpClientRetry to udiTcpClientRetry and tCipRequestTimeout to uiCipRequestTimeout
+
 v1.0.4.5:
 * moved init variables from FB_init into gvcParameters so end users can adjust default values directly from Library Manager
 
