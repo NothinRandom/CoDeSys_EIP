@@ -5,9 +5,9 @@ CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (I
 
 **Why?**
 
-In CoDeSys, the current method of communicating with the Rockwell PLC is through implicit messaging.  This means you need to set up a generic EIP module on each end and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you will need to modify the PLC's code along by copying the address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Additionally, Rockwell PLCs must be the EIP master scanner (server), so your device must be the EIP slave (adapter).  Similar for the Fanuc robot, there is no easy way to exchange data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased; even then you are still bound to Rockwell.  This library allows your CoDeSys IPC to do so (see `Examples\Fanuc`).
+In CoDeSys, the current method of communicating with the Rockwell PLC is through implicit messaging.  This means you need to set up a generic EIP module on each device and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you would need to modify the PLC's code by copying its address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Additionally, Rockwell PLCs must be the EIP scanner (server), so your device needs to be configured as the EIP adapter (client).  Similar for the Fanuc robot, there is no easy way to exchange data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased.  Even then, you still need to use a Rockwell PLC.  This library allows your CoDeSys IPC to communicate with the robot controller without additional overhead (see `Examples\Fanuc`).
 
-This library was first inspired by another library implemented in Python called [PyLogix](https://github.com/dmroeder/pylogix) and has been improved to handle STRUCTs and generic EIP services.  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to fit into the controls realm.  It is written to operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and be notified when data has been read/written succesfully.  If you need to read multiple variables quickly, you can create a lower priority task and place the calls into a WHILE loop to force operations in one scan cycle (see `Examples\Rockwell\Read-Write_Tags_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
+CoDeSys_EIP was first inspired by another library that was written in Python called [PyLogix](https://github.com/dmroeder/pylogix) and has been improved to handle STRUCTs and generic EIP services.  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to accomodate control requirements.  It is written to operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and be notified when data has been read/written succesfully.  If you need to read multiple variables in once scan, then you can create a lower priority task and place the calls into a WHILE loop (see `Examples\Rockwell\Read-Write_Tags_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
 
 ### Getting started
 Create an function block instance in your CoDeSys program, and specify the PLC's IP and port.  Then create some variables:
@@ -234,12 +234,12 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 #### List Identity
 `bGetListIdentity()` (BOOL) is automatically called after TCP connection is established to return device info. You could scan your network for other EtherNet/IP capable devices.  
 * **Examples:**
-    * Retrieve single parameter as UINT using: `_uiVendorId := _PLC.uiVendorId`
+    * Retrieve single parameter as UINT using: `_uiVendorId := _PLC.uiVendorId;`
         * **Output:** `1`
-    * Retrieve single parameter as STRING using: `_sVendorId := _PLC.sVendorId`
+    * Retrieve single parameter as STRING using: `_sVendorId := _PLC.sVendorId;`
         * **Output:** `'Rockwell Automation/Allen-Bradley'`
     * Retrieve entire STRUCT using: `_stDevice := _PLC.stListIdentity`
-        * Requires STRUCT variable: `_stDevice`: `CoDeSys_EIP.stListIdentity`
+        * Requires STRUCT variable: `_stDevice : CoDeSys_EIP.stListIdentity;`
         * **Output:**
             * encapsulationVersion: `1`
             * socketFamily: `2`
@@ -256,33 +256,33 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
             * state: `3`
 
 #### Get/Set PLC time
-`bGetPlcTime()` (BOOL) requests the current PLC time.  The function can handle 64b time up to nanoseconds, but the PLC's accuracy is only available at the microseconds.
+`bGetPlcTime()` (BOOL) requests the current PLC time.  The function can handle 64b time up to nanoseconds resolution, but the PLC's accuracy is only available at the microseconds.
 * **Example:**
-    * Retrieve time as STRING: `_sPlcTime := _PLC.sPlcTime`.
+    * Retrieve time as STRING: `_sPlcTime := _PLC.sPlcTime;`
         * **Output:** `'LDT#2020-07-10-01:05:59.409036000'`
-    * Retrieve time in microseconds as ULINT: `_uliPlcTime := _PLC.uliPlcTime`.
+    * Retrieve time in microseconds as ULINT: `_uliPlcTime := _PLC.uliPlcTime;`
         * **Output:** `1593815478238754`
 
 `bSetPlcTime(ULINT)` (BOOL) sets the PLC time.
 * **Examples:**
-    * Synchronize PLC's time to IPC's time: `bSetPlcTime()`.
-    * Set a PLC time in microseconds to `Friday, July 3, 2020 10:31:18 PM GMT` with seconds level accuracy: `bSetPlcTime(1593815478000000)`.
-    * **NOTE:** Look at built-in `Timestamp` function block.
+    * Synchronize PLC's time to IPC's time: `bSetPlcTime()`
+    * Set a PLC time to `Friday, July 3, 2020 10:31:18 PM GMT` with seconds level accuracy in microseconds: `bSetPlcTime(1593815478000000)`
+    * **NOTE:** Look at built-in `Timestamp` function block
 
 #### Detect Code Changes
 From a security perspective, it is useful to detect changes on the Rockwell PLC.
 `bGetPlcAuditValue()` (BOOL) requests the PLC audit value.
 * **Example:**
-    * Retrieve audit value as ULINT: `_uliAuditValue := _PLC.uliAuditValue`.
+    * Retrieve audit value as ULINT: `_uliAuditValue := _PLC.uliAuditValue;`
         * **Output:** `12650121977826373092` (16#AF8E42EA65B3EDE4)
-    * Retrieve audit value as STRING: `_sAuditValue := _PLC.sAuditValue`.
+    * Retrieve audit value as STRING: `_sAuditValue := _PLC.sAuditValue;`
         * **Output:** `'0xAF8E42EA65B3EDE4'`
 
 `bGetPlcMask()` (BOOL) requests the PLC Change To Detect mask.
 * **Example:**
-    * Retrieve mask value as ULINT: `_uliMask := _PLC.uliMask`.
+    * Retrieve mask value as ULINT: `_uliMask := _PLC.uliMask;`
         * **Output:** `18446744073709551615` (16#FFFFFFFFFFFFFFFF)
-    * Retrieve mask value as STRING: `_sMask := _PLC.sMask`.
+    * Retrieve mask value as STRING: `_sMask := _PLC.sMask;`
         * **Output:** `'0xFFFFFFFFFFFFFFFF'`
 
 `bSetPlcMask(ULINT)` (BOOL) *should* set the PLC Change To Detect mask.
@@ -293,7 +293,7 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 
 ### Useful parameters (SET/GET)
 **NOTE:** There are a lot more, so dive into library to see what works best for you
-* `bAutoReconnect` (BOOL) reconnects you if the session closes after idle (no read/write request) for roughly 60 seconds.
+* `bAutoReconnect` (BOOL) re-establishes session if PLC closes it after idling (no read/write request) for roughly 60 seconds.
     * Default: `FALSE`
     * Example set: `_PLC.bAutoReconnect := TRUE;`
     * Example get: `_bReconnect := _PLC.bAutoReconnect;`
@@ -303,7 +303,7 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
     * Default: `FALSE`
 * `bMicro800` (BOOL) specifies the device as a Micro800.
     * Default: `FALSE`
-    * Not tested.  Need someone with an actual Micro800 PLC.
+    * Not tested yet; need a Micro800 PLC.
 * `bProcessorSlot` (BYTE) specifies the processor slot.
     * Default: `0`
 * `sDeviceIp` (STRING) allows you to change device IP from the one specified initially.
