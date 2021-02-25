@@ -5,9 +5,9 @@ CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (I
 
 **Why?**
 
-In CoDeSys, the current method of communicating with the Rockwell PLC is through implicit messaging.  This means you need to set up a generic EIP module on each device and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you would need to modify the PLC's code by copying its address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Additionally, Rockwell PLCs must be the EIP scanner (server), so your device needs to be configured as the EIP adapter (client).  Similar for the Fanuc robot, there is no easy way to exchange data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased.  Even then, you still need to use a Rockwell PLC.  This library allows your CoDeSys IPC to communicate with the robot controller without additional overhead (see `Examples\Fanuc`).
+In CoDeSys, the current method of communicating with the Rockwell PLC is through implicit messaging.  This means you need to set up a generic EIP module on each device and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you would need to modify the PLC's code by copying its address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Additionally, Rockwell PLCs must be the EIP scanner (server), so your device needs to be configured as the EIP adapter (client).  Similar for the Fanuc robot, there is no easy way to exchange data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased.  Even then, you still need to use a Rockwell PLC.  This library allows your CoDeSys IPC to communicate with the robot controller without additional overhead (see `Examples/Fanuc`).
 
-CoDeSys_EIP was first inspired by another library that was written in Python called [PyLogix](https://github.com/dmroeder/pylogix) and has been improved to handle STRUCTs and generic EIP services.  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to accomodate control requirements.  It is written to operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and be notified when data has been read/written succesfully.  If you need to read multiple variables in once scan, then you can create a lower priority task and place the calls into a WHILE loop (see `Examples\Rockwell\Read-Write_Tags_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
+CoDeSys_EIP was first inspired by a Python library called [PyLogix](https://github.com/dmroeder/pylogix) and has been improved to handle STRUCTs and generic EIP services.  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to accomodate control requirements.  It is written to operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and be notified when data has been read/written succesfully.  If you need to read multiple variables in one scan, then you can create a lower priority task and place the calls into a WHILE loop (see `Examples/Rockwell/Read-Write_Tags_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
 
 ### Getting started
 Create an function block instance in your CoDeSys program, and specify the PLC's IP and port.  Then create some variables:
@@ -93,7 +93,7 @@ _PLC.bRead(psTag:=ADR('codesys_string'),
             pbBuffer:=ADR(_sReadTag_codesys_string));
 ```
 Below reads the PLC controller UDT `codesys_mixed` with data type of a **"complex" STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_mixed`.
-**Note**: Specify the size of the CoDeSys STRUCT.  See `Examples\Rockwell` folder for more details.
+**Note**: Specify the size of the CoDeSys STRUCT.  See `Examples/Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('codesys_mixed'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -101,7 +101,7 @@ _PLC.bRead(psTag:=ADR('codesys_mixed'),
             uiSize:=SIZEOF(_stReadTag_codesys_mixed));
 ```
 Below reads the PLC tag `codesys_string_local` of a program called `MainProgram` with data type of **STRUCT** and writes to a CoDeSys **STRUCT** called `_stReadTag_codesys_string_local`.
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details.
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples/Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('Program:MainProgram.codesys_string_local'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -109,7 +109,7 @@ _PLC.bRead(psTag:=ADR('Program:MainProgram.codesys_string_local'),
             uiSize:=SIZEOF(_stReadTag_codesys_string_local));
 ```
 Below reads the array index 3 of a PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings`.
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details.
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples/Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -117,7 +117,7 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[3]'),
             uiSize:=SIZEOF(_stReadTag_testCaseFiveStrings));
 ```
 Below reads 2 elements (starting index of 1) from PLC controller tag `testCaseFiveStrings` with data type of **STRING25** and writes to a CoDeSys **STRUCT** called `_stReadTag_testCaseFiveStrings2`.
-**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples\Rockwell` folder for more details.
+**Note**: Specify `uiSize` since STRUCT also has string length (DINT).  See `Examples/Rockwell` folder for more details.
 ```
 _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[1]'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -161,7 +161,7 @@ _PLC.bWrite(psTag:=ADR('Program:MainProgram.codesys_lreal_local'),
             pbBuffer:=ADR(_lrWriteTag_codesys_lreal_local));
 ```
 Below writes the CoDeSys **STRUCT** called `_stWriteTag_codesys_string` to the PLC controller tag `codesys_string`.  
-**NOTE:** Writing to a PLC string must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Examples\Rockwell` folder for more details
+**NOTE:** Writing to a PLC string must follow the format of a STRUCT made up of length (DINT) and a STRING.  Specify the length before writing!  See `Examples/Rockwell` folder for more details
 ```
 _PLC.bWrite(psTag:=ADR('codesys_string'),
             eDataType:=CoDeSys_EIP.eCipTypes._STRUCT,
@@ -190,7 +190,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
         * Useful for troubleshooting; output to _PLC.sError.
     * `bUnconnected` (BOOL): Forces unconnected messaging (Send RR Data) if `TRUE`.
 * Function returns TRUE on successful read/write
-* See `Examples\Rockwell\Set-Get_Attribute_RPi.project` for more details
+* See `Examples/Rockwell/Set-Get_Attribute_RPi.project` for more details
 * **Examples:**
     * Create a re-usable STRUCT or one for each service type: `_stCipService : CoDeSys_EIP.stCipService;`
     * Get PLC audit value (checksum)
@@ -199,7 +199,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
             * _stCipService.class := 16#8E; // 142
             * _stCipService.instance := 16#01; // 1
             * _stCipService.attribute := 16#1B; // 27
-        * Call function `bGetAttributeSingle(stCipService:=_stCipService, pbBuffer:=ADR(_lwAuditValue), uiSize:=SIZEOF(_lwAuditValue), pstId:=ADR('AuditValue: '))`
+        * Call function `bGetAttributeSingle(stCipService:=_stCipService, pbBuffer:=ADR(_lwAuditValue), uiSize:=SIZEOF(_lwAuditValue), psId:=ADR('AuditValue: '))`
             * If there is an error, message will have header of `AuditValue`
     * Set PLC Change To Detect Mask
         * Create a LWORD/ULINT for the value: `_lwMask : LWORD;`
@@ -207,7 +207,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
             * _stCipService.class := 16#8E; // 142
             * _stCipService.instance := 16#01; // 1
             * _stCipService.attribute := 16#1C; // 28
-        * Call function `bSetAttributeSingle(stCipService:=_stCipService, pbBuffer:=ADR(_lwMask), uiSize:=SIZEOF(_lwMask), pstId:=ADR('Mask: '))`
+        * Call function `bSetAttributeSingle(stCipService:=_stCipService, pbBuffer:=ADR(_lwMask), uiSize:=SIZEOF(_lwMask), psId:=ADR('Mask: '))`
             * If there is an error, message will have header of `Mask`
     * Get the PLC time (look at `bGetPlcTime()` to see how it is implemented)
         * Create a STRUCT to store result: `_stPlcTime : stPlcTime;`
@@ -216,7 +216,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
             * _stCipService.instance := 16#01; // 1
             * _stCipService.attributeCount := 16#01; // 1
             * _stCipService.attributeList[1] := 16#0B; // we are only getting one attribute here
-        * Call function `bGetAttributeList(stCipService:=_stCipService, pbBuffer:=ADR(_stPlcTime), uiSize:=SIZEOF(_stPlcTime), pstId:=ADR('GetPlcTime: '))`
+        * Call function `bGetAttributeList(stCipService:=_stCipService, pbBuffer:=ADR(_stPlcTime), uiSize:=SIZEOF(_stPlcTime), psId:=ADR('GetPlcTime: '))`
     * Set the PLC time (look at `bSetPlcTime(ULINT)` to see how it is implemented)
         * Create a ULINT that stores time in microseconds: `_uliSetTime : ULINT;`
         * Specify parameters:
@@ -224,10 +224,10 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
             * _stCipService.instance := 16#01; // 1
             * _stCipService.attributeCount := 16#01; // 1
             * _stCipService.attributeList[1] := 16#06; // 6
-        * Call function `bSetAttributeList(stCipService:=_stCipService, pbBuffer:=ADR(_uliSetTime), uiSize:=SIZEOF(_uliSetTime), pstId:=ADR('SetPlcTime: '))`
+        * Call function `bSetAttributeList(stCipService:=_stCipService, pbBuffer:=ADR(_uliSetTime), uiSize:=SIZEOF(_uliSetTime), psId:=ADR('SetPlcTime: '))`
 
 ### But does it work?
-Yes... 60% of the time, it works every time.  Testing was done using a Raspberry Pi 3, with CoDeSys 3.5.16.0 runtime installed, to communicate with a Rockwell `5069-L330ERMS2/A` safety PLC.  Each read/write instruction averaged approximately 3.7 milliseconds using WiFi and around 900 microseconds over wired in test project (see `Examples\Rockwell\Read-Write_Tags_RPi.project`), but your mileage might vary.  You will need to install SysTime and OSCAT Basic (this is for time formatting).
+Yes... 60% of the time, it works every time.  Testing was done using a Raspberry Pi 3, with CoDeSys 3.5.16.0 runtime installed, to communicate with a Rockwell `5069-L330ERMS2/A` safety PLC.  Each read/write instruction averaged approximately 3.7 milliseconds using WiFi and around 900 microseconds over wired in test project (see `Examples/Rockwell/Read-Write_Tags_RPi.project`), but your mileage might vary.  You will need to install SysTime and OSCAT Basic (this is for time formatting).
 
 ### Current features
 
@@ -238,7 +238,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
         * **Output:** `1`
     * Retrieve single parameter as STRING using: `_sVendorId := _PLC.sVendorId;`
         * **Output:** `'Rockwell Automation/Allen-Bradley'`
-    * Retrieve entire STRUCT using: `_stDevice := _PLC.stListIdentity`
+    * Retrieve entire STRUCT using: `_stDevice := _PLC.stListIdentity;`
         * Requires STRUCT variable: `_stDevice : CoDeSys_EIP.stListIdentity;`
         * **Output:**
             * encapsulationVersion: `1`
@@ -254,6 +254,19 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
             * serialNumber: `'0x60D789F4'`
             * productName: `'5069-L330ERMS2/A'`
             * state: `3`
+    * To make status (e.g. `'0x3060'`) more meaningful: 
+        * Requires STRUCT variable: `_stStatus := CoDeSys_EIP.stListIdentityStatus;`
+        * Retrieve using `_stStatus := _PLC.stDeviceStatus;`
+        * **Output:**
+            * owned: `FALSE`
+            * configured: `FALSE`
+            * extendedDeviceStatus: `'At least one I/O connection in run mode'`
+            * faulted: `TRUE`
+            * minorRecoverableFault: `TRUE`
+            * minorUnrecoverableFault: `FALSE`
+            * majorRecoverableFault: `FALSE`
+            * majorUnrecoverableFault: `FALSE`
+    * To make state (e.g. `3`) more meaningful, use sDeviceState:
 
 #### Get/Set PLC time
 `bGetPlcTime()` (BOOL) requests the current PLC time.  The function can handle 64b time up to nanoseconds resolution, but the PLC's accuracy is only available at the microseconds.

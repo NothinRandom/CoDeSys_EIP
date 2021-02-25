@@ -1,3 +1,6 @@
+v1.0.4.7:
+* added stDeviceStatus to list identity status (thanks Canaan)
+
 v1.0.4.6:
 * in gvcParameters: 
     * created parameter uiAttributeDataSize for stCipServiceData.attributeData
