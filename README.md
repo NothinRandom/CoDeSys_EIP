@@ -255,8 +255,8 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
             * productName: `'5069-L330ERMS2/A'`
             * state: `3`
     * To make status (e.g. `'0x3060'`) more meaningful: 
-        * Requires STRUCT variable: `_stStatus := CoDeSys_EIP.stListIdentityStatus;`
-        * Retrieve using `_stStatus := _PLC.stDeviceStatus;`
+        * Requires STRUCT variable: `_stDeviceStatus := CoDeSys_EIP.stListIdentityStatus;`
+        * Retrieve using `_stDeviceStatus := _PLC.stDeviceStatus;`
         * **Output:**
             * owned: `FALSE`
             * configured: `FALSE`
