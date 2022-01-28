@@ -1,0 +1,6 @@
+Test/UnitTests.project
+*.~u
+*.bootinfo
+*.bootinfo_guids
+*.compileinfo
+*.opt

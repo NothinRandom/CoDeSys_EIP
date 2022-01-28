@@ -1,3 +1,7 @@
+v1.0.4.8:
+* under stCipService, changed class to cipClass due to keyword warning.
+* updated example projects
+
 v1.0.4.7:
 * added stDeviceStatus to list identity status (thanks Canaan)
 
