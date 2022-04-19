@@ -1,15 +1,15 @@
 # CoDeSys_EIP
-**What?**
+### **What?**
 
 CoDeSys_EIP is a CoDeSys 3.5.16.0 library that allows your CoDeSys controller (IPC) to communicate with various EtherNet/IP (EIP) capable devices such as Allen Bradley / Rockwell programmable logic controller (PLC) through tag based communication or Fanuc robot with EIP set/get attributes; both via explicit messaging.
 
-**Why?**
+### **Why?**
 
 In CoDeSys, the current method of communicating with the Rockwell PLC is through implicit messaging.  This means you need to set up a generic EIP module on each device and for each task (input/output), where you specify the number of bytes for sending and receiving based on some form of polling (RPI) or triggered / event-based.  This is not very flexible as you would need to modify the PLC's code by copying its address data into the EIP module buffer, and then repeat for the IPC... for each PLC that you want to connect to.  Additionally, Rockwell PLCs must be the EIP scanner (server), so your device needs to be configured as the EIP adapter (client).  Similar for the Fanuc robot, there is no easy way to exchange data from the robot to the Rockwell PLC unless the Enhanced Data Access (EDA) package is purchased.  Even then, you still need to use a Rockwell PLC.  This library allows your CoDeSys IPC to communicate with the robot controller without additional overhead (see `Examples/Fanuc`).
 
 CoDeSys_EIP was first inspired by a Python library called [PyLogix](https://github.com/dmroeder/pylogix) and has been improved to handle STRUCTs and generic EIP services.  For the control engineers out there, you might already know that writing PLC code is not as flexible as writing higher level languages such as Python/Java/etc, where you can create variables with virtually any data type on the fly; thus, this library was heavily modified to accomodate control requirements.  It is written to operate asynchronously (non-blocking) to avoid watchdog alerts, which means you make the call and be notified when data has been read/written succesfully.  If you need to read multiple variables in one scan, then you can create a lower priority task and place the calls into a WHILE loop (see `Examples/Rockwell/Read-Write_Tags_RPi.project`).  At least 95% of the library leverages pointers for efficiency, so it might not be straight forward to digest at first.  The documentation / comments is not too bad, but feel free to raise issues if needed.
 
-### Getting started
+### **Getting started**
 Create an function block instance in your CoDeSys program, and specify the PLC's IP and port.  Then create some variables:
 ```
 VAR
@@ -37,10 +37,10 @@ END_VAR
 
 In your code, toggle `bEnable` of _PLC to `TRUE`.  There is optional `bAutoReconnect` to re-establish session if terminated from idling.
 
-#### Data alignment:
+#### **Data alignment:**
 Allen Bradley is 4/8 bytes aligned, so make sure you specify CoDeSys STRUCTs with `{attribute 'pack_mode' := '4'}`.  Read the [CoDeSys pack mode](https://help.codesys.com/webapp/_cds_pragma_attribute_pack_mode;product=codesys;version=3.5.16.0).
 
-#### Reading Tag
+### **Reading Tag**
 **NOTE**:
 * Add "Program:{programName}." prefix to read program tags (e.g. Program:MainProgram.codesys_bool_local)
 * Possible arguments for `bRead`:
@@ -126,7 +126,7 @@ _PLC.bRead(psTag:=ADR('testCaseFiveStrings.strTest[1]'),
             uiElements:=2);
 ```
 
-#### Writing Tag
+### **Writing Tag**
 **NOTE**:
 * Add "Program:{programName}." prefix to write program tags (e.g. Program:MainProgram.codesys_bool_local)
 * If you are writting to a tag that has not been read in yet, then an extra read request is performed first, and the STRUCT identifier of the response data is captured in `_stKnownStructs` "dictionary".  All subsequent writes of the same tag will perform a dictionary look up to save time.
@@ -169,7 +169,7 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
             uiSize:=SIZEOF(_stWriteTag_codesys_string));
 ```
 
-#### Set/Get Attributes
+### **Set/Get Attributes**
 **NOTE**:
 * You will need to create a STRUCT and specify what you are getting/setting
     * You could share the same STRUCT if space is a concern (i.e. use `_stCipService : CoDeSys_EIP.stCipService` for both set/get)
@@ -226,12 +226,17 @@ _PLC.bWrite(psTag:=ADR('codesys_string'),
             * _stCipService.attributeList[1] := 16#06; // 6
         * Call function `bSetAttributeList(stCipService:=_stCipService, pbBuffer:=ADR(_uliSetTime), uiSize:=SIZEOF(_uliSetTime), psId:=ADR('SetPlcTime: '))`
 
-### But does it work?
+### **But does it work?**
 Yes... 60% of the time, it works every time.  Testing was done using a Raspberry Pi 3, with CoDeSys 3.5.16.0 runtime installed, to communicate with a Rockwell `5069-L330ERMS2/A` safety PLC.  Each read/write instruction averaged approximately 3.7 milliseconds using WiFi and around 900 microseconds over wired in test project (see `Examples/Rockwell/Read-Write_Tags_RPi.project`), but your mileage might vary.  You will need to install SysTime and OSCAT Basic (this is for time formatting).
+#### **Tested controllers:**
+* `1769-L33ERMS/A`
+* `1769-L36ERMS/A`
+* `5069-L330ERMS2/A`
+* `1756-L81E`
 
-### Current features
+### **Current features**
 
-#### List Identity
+#### **List Identity**
 `bGetListIdentity()` (BOOL) is automatically called after TCP connection is established to return device info. You could scan your network for other EtherNet/IP capable devices.  
 * **Examples:**
     * Retrieve single parameter as UINT using: `_uiVendorId := _PLC.uiVendorId;`
@@ -268,7 +273,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
             * majorUnrecoverableFault: `FALSE`
     * To make state (e.g. `3`) more meaningful, use sDeviceState:
 
-#### Get/Set PLC time
+#### **Get/Set PLC time**
 `bGetPlcTime()` (BOOL) requests the current PLC time.  The function can handle 64b time up to nanoseconds resolution, but the PLC's accuracy is only available at the microseconds.
 * **Example:**
     * Retrieve time as STRING: `_sPlcTime := _PLC.sPlcTime;`
@@ -282,7 +287,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
     * Set a PLC time to `Friday, July 3, 2020 10:31:18 PM GMT` with seconds level accuracy in microseconds: `bSetPlcTime(1593815478000000)`
     * **NOTE:** Look at built-in `Timestamp` function block
 
-#### Detect Code Changes
+#### **Detect Code Changes**
 From a security perspective, it is useful to detect changes on the Rockwell PLC.
 `bGetPlcAuditValue()` (BOOL) requests the PLC audit value.
 * **Example:**
@@ -304,7 +309,7 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 * **Examples:**
     * Set the mask to 0xFFFF: `bSetPlcMask(65535)` or `bSetPlcMask(16#FFFF)`
 
-### Useful parameters (SET/GET)
+### **Useful parameters (SET/GET)**
 **NOTE:** There are a lot more, so dive into library to see what works best for you
 * `bAutoReconnect` (BOOL) re-establishes session if PLC closes it after idling (no read/write request) for roughly 60 seconds.
     * Default: `FALSE`
@@ -340,10 +345,10 @@ From a security perspective, it is useful to detect changes on the Rockwell PLC.
 * `stRoute` (STRUCT) specifies a non-standard route that cannot be generated by `bBuildRoute(STRING)`.
     * **NOTE:** Max route length is 96 bytes, and make sure to specify STRUCT length so forward open knows how to properly build the route.
 
-### Useful variable lists:
+### **Useful variable lists:**
 * `gvcParameters` holds the default values from above, so adjust values to fit your needs.
 
-### Useful methods:
+### **Useful methods:**
 * `bCloseSession()` (BOOL) sends forward close request and then unregister session request. 
     * **NOTE:** If `bAutoReconnect` is set to TRUE, session will be re-established within the specified `udiTcpClientRetry` period.
 * `bResetFault()` (BOOL) call this to ACK read/write fault flags.

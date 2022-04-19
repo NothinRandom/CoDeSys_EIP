@@ -28,7 +28,7 @@ Quick tutorial on how to set up I/O between your CoDeSys controller and the Fanu
     3) Check `Consuming assembly (O-->T)` and enter `98` for Instance ID.  This is hex value for `152` in decimal
         1) **NOTE:**  Example uses slot 2 on robot controller.  Change value to `97` hex / `151` decimal for slot 1, or `99` hex / `153` decimal for slot 3, etc.
     4) Check `Configuration assembly` and enter `66` for Instance ID.  This is hex value for `102` in decimal
-        1) **NOTE:**  Example uses slot 2 on robot controller.  Change value to `66` hex / `102` decimal for slot 1, or `67` hex / `103` decimal for slot 3, etc.
+        1) **NOTE:**  Example uses slot 2 on robot controller.  Change value to `65` hex / `101` decimal for slot 1, or `67` hex / `103` decimal for slot 3, etc.
     5) Modify:
         1) The RPI if needed.  Default is `10ms`
         2) `O-->T size (bytes)` is CoDeSys's output to Fanuc's input.  Example uses 2 words, which can control 32 Fanuc input bits
