@@ -232,7 +232,7 @@ Yes... 60% of the time, it works every time.  Testing was done using a Raspberry
 * `1769-L33ERMS/A`
 * `1769-L36ERMS/A`
 * `5069-L330ERMS2/A`
-* `1756-L81E`
+* `1756-L81E/B`
 
 ### **Current features**
 

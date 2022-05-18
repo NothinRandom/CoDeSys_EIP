@@ -1,3 +1,6 @@
+v1.0.4.9:
+* handles autoreconnect on physical ethernet disconnect
+
 v1.0.4.8:
 * under stCipService, changed class to cipClass due to keyword warning.
 * updated example projects
